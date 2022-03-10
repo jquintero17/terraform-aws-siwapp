@@ -20,7 +20,9 @@ resource "aws_instance" "db1" {
     "Owner"               = var.owner
     "Name"                = "Siwapp_db1"
     "KeepInstanceRunning" = "false"
-    "ansible_group"	  = "db"
+    "ansible_group"	      = "db"
+    "ApplicationName"     = "siwapp"
+    "Scope"               = "prod"
   }
 }
 
@@ -45,6 +47,9 @@ resource "aws_instance" "db2" {
     "Name"                = "Siwapp_db2"
     "KeepInstanceRunning" = "false"
     "ansible_group"       = "db"
+    "ansible_group"	      = "db"
+    "ApplicationName"     = "siwapp"
+    "Scope"               = "prod"
   }
 }
 
@@ -69,6 +74,9 @@ resource "aws_instance" "db3" {
     "Name"                = "Siwapp_db3"
     "KeepInstanceRunning" = "false"
     "ansible_group"       = "db"
+    "ansible_group"	      = "db"
+    "ApplicationName"     = "siwapp"
+    "Scope"               = "prod"
   }
   provisioner "remote-exec" {
     inline =  ["echo Done!"]
@@ -80,7 +88,7 @@ resource "aws_instance" "db3" {
       private_key = file(var.pvt_key)
     }
   }
-   provisioner "local-exec" {
-    command = "ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -u ec2-user -i '${self.public_ip},' --private-key ${var.pvt_key} ansible/site.yml"
+  # provisioner "local-exec" {
+   # command = "ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -u ec2-user -i '${self.public_ip},' --private-key ${var.pvt_key} ansible/site.yml"
   }
 }

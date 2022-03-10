@@ -1,4 +1,17 @@
 ---
+
+# # =========================================================
+# #       PLAY -- Read in global variables
+# # ---------------------------------------------------------
+
+- name: Include deployment information
+  hosts: all
+  gather_facts: False
+  
+  tasks:
+  - name: Read DNS and IP information for all hosts
+    include_vars: aws_ec2.yml
+
 # =========================================================
 #       PLAY -- Configure database tier
 # ---------------------------------------------------------
