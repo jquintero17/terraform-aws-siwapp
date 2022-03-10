@@ -7,6 +7,10 @@
     description: mariadb
     state: present
 
+- name: Create local hosts file
+  template:
+    src: hosts
+    dest: /etc/hosts
 
 - name: Create new galera cluster on master node
   command: sudo dnf install https://dl.fedoraproject.org/pub/epel/epel-release-latest-8.noarch.rpm -y
@@ -103,18 +107,20 @@
 
 - name: Create server.cnf file on all hosts
   vars:
-    databases: "{{ansible_hostname}}"
+    databases: "{{db.ansible_priv_ip}}"
   template:
     src: server.cnf
     dest: /etc/my.cnf.d/server.cnf
 
 - name: Create new galera cluster on master node
   command: galera_new_cluster
+  when: ansible_hostname in db[0].name
 
 - name: Copy sql dump to master node
   copy:
     src: siwapp.sql
     dest: /tmp/siwapp.sql
+  when: ansible_hostname in db[0].name
 
 - name: Import sql dump for siwapp on master node
   mysql_db:
@@ -123,6 +129,7 @@
     state: import
     name: all
     target: /tmp/{{ galera_db_name }}.sql
+  when: ansible_hostname in db[0].name
 
 - name: Add user haproxy to MariaDB with ro privs
   mysql_user:
@@ -131,12 +138,14 @@
     login_user: root
     login_password: "{{ galera_db_root_pwd }}"
     state: present
+  when: ansible_hostname in db[0].name
 
 - name: Enable and start the mariadb service
   systemd:
     name: mariadb
     state: started
     enabled: yes
+  when: ansible_hostname not in db[0].name
 
 - name: Create siwapp fixup script directory if it doesn't exist
   file:
@@ -146,7 +155,7 @@
 
 - name: Create galera fixup script on all hosts
   vars:
-    databases: "{{siwapp_deployment.db}}"
+    databases: "{{db}}"
   template:
     src: siwapp-galera-fixup.sh
     dest: /usr/share/systemd/siwapp/siwapp-galera-fixup.sh
