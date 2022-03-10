@@ -10,12 +10,16 @@
   
   tasks:
   - name: Read DNS and IP information for all hosts
-    include_vars: aws_ec2.yml
-
-  - name: Display DNS and IP information for all hosts
-    debug: 
-      var: hosts
-      verbosity: 2
+    vars:
+      myVar: |
+        Name: {{ tags.Name }} 
+        Instance Id: {{ instance_id }} 
+        Region: {{ placement.region }} 
+        Zone: {{ placement.availability_zone }} 
+        Instance Type: {{  instance_type }}
+        Public Ip: {{ public_ip_address }}
+        Private Ip: {{ private_ip_address }}
+        Tags: {{ tags }}
 
 # =========================================================
 #       PLAY -- Configure database tier
