@@ -7,15 +7,6 @@
 - name: Include deployment information
   hosts: all
   gather_facts: True
-  vars:
-    - dbname: "{{ tags.Name }}"
-    - instance_id: "{{ instance_id }}"
-    - region: "{{ placement.region }}"
-    - zone: "{{ placement.availability_zone }}"
-    - instance_type: "{{  instance_type }}"
-    - public_ip: "{{ public_ip_address }}"
-    - private_ip: "{{ private_ip_address }}"
-    - dbtags: "{{ tags }}"
 
   tasks:
     - name: Display all variables/facts known for a host
