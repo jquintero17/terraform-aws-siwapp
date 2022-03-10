@@ -78,10 +78,10 @@ wsrep_provider                 = /usr/lib64/galera/libgalera_smm.so
 wsrep_sst_method               = rsync
 wsrep_slave_threads            = 4
 innodb-flush-log-at-trx-commit = 2
-wsrep_cluster_address          = 'gcomm://{{ hostvars[databases] | join(',', attribute='ansible_priv_ip') }}'
+wsrep_cluster_address          = 'gcomm://{% for host in databases %} {{ hostvars[host] | join(',', attribute='ansible_priv_ip') }} {% endfor %}'
 wsrep_cluster_name             = '{{ galera_db_cluster_name }}'
-wsrep_node_address             = '{{ (hostvars[databases] | selectattr('name','match',ansible_hostname) | list)[0]['ansible_priv_ip']}}'
-wsrep_node_name                = '{{ (hostvars[databases] | selectattr('name','match',ansible_hostname) | list)[0]['private_dns_name'] }}'
+wsrep_node_address             = '{{ (databases | selectattr('name','match',ansible_hostname) | list)[0]['ansible_priv_ip']}}'
+wsrep_node_name                = '{{ (databases | selectattr('name','match',ansible_hostname) | list)[0]['private_dns_name'] }}'
 
 # MYISAM REPLICATION SUPPORT #
 wsrep_replicate_myisam         = ON
