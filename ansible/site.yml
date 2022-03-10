@@ -7,19 +7,16 @@
 - name: Include deployment information
   hosts: all
   gather_facts: False
-  
-  tasks:
-  - name: Read DNS and IP information for all hosts
-    vars:
-      myVar: |
-        Name: {{ tags.Name }} 
-        Instance Id: {{ instance_id }} 
-        Region: {{ placement.region }} 
-        Zone: {{ placement.availability_zone }} 
-        Instance Type: {{  instance_type }}
-        Public Ip: {{ public_ip_address }}
-        Private Ip: {{ private_ip_address }}
-        Tags: {{ tags }}
+  vars:
+  myVar: |
+    Name: {{ tags.Name }} 
+    Instance Id: {{ instance_id }} 
+    Region: {{ placement.region }} 
+    Zone: {{ placement.availability_zone }} 
+    Instance Type: {{  instance_type }}
+    Public Ip: {{ public_ip_address }}
+    Private Ip: {{ private_ip_address }}
+    Tags: {{ tags }}
   
 # =========================================================
 #       PLAY -- Configure database tier
