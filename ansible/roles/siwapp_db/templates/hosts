@@ -1,4 +1,4 @@
 127.0.0.1   {{ ansible_hostname }}
-{% for vm in db %}
+{% for vm in db.hosts %}
 {{ vm.ansible_priv_ip }}     {{ vm.name }}
 {% endfor %}
