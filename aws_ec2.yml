@@ -1,0 +1,13 @@
+---
+plugin: aws_ec2
+aws_profile: default
+strict: True
+regions:
+  - us-east-1
+hostnames:
+  - ip-address
+compose:
+  ansible_priv_ip: private_ip_address
+keyed_groups:
+  - key: tags.ansible_group
+    separator: ""
