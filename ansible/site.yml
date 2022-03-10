@@ -8,14 +8,14 @@
   hosts: all
   gather_facts: False
   vars:
-    Name: {{ tags.Name }} 
-    Instance Id: {{ instance_id }} 
-    Region: {{ placement.region }} 
-    Zone: {{ placement.availability_zone }} 
-    Instance Type: {{  instance_type }}
-    Public Ip: {{ public_ip_address }}
-    Private Ip: {{ private_ip_address }}
-    Tags: {{ tags }}
+    Name: "{{ tags.Name }}"
+    Instance Id: "{{ instance_id }}"
+    Region: "{{ placement.region }}"
+    Zone: "{{ placement.availability_zone }}"
+    Instance Type: "{{  instance_type }}"
+    Public Ip: "{{ public_ip_address }}"
+    Private Ip: "{{ private_ip_address }}"
+    Tags: "{{ tags }}"
   
 # =========================================================
 #       PLAY -- Configure database tier
