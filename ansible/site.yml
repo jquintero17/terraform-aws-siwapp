@@ -6,7 +6,7 @@
 
 - name: Include deployment information
   hosts: all
-  gather_facts: False
+  gather_facts: True
   vars:
     Name: "{{ tags.Name }}"
     Instance Id: "{{ instance_id }}"
