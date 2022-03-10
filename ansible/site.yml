@@ -8,16 +8,16 @@
   hosts: all
   gather_facts: True
   vars:
-    - name: "{{ tags.Name }}"
+    - dbname: "{{ tags.Name }}"
     - instance_id: "{{ instance_id }}"
     - region: "{{ placement.region }}"
     - zone: "{{ placement.availability_zone }}"
     - instance_type: "{{  instance_type }}"
     - public_ip: "{{ public_ip_address }}"
     - private_ip: "{{ private_ip_address }}"
-    - tags: "{{ tags }}"
-  debug: 
-     msg: "{{ vars.split('\n') }}"
+    - dbtags: "{{ tags }}"
+
+
 # =========================================================
 #       PLAY -- Configure database tier
 # ---------------------------------------------------------
