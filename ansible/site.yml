@@ -16,7 +16,8 @@
     - public_ip: "{{ public_ip_address }}"
     - private_ip: "{{ private_ip_address }}"
     - tags: "{{ tags }}"
-  
+  debug: 
+     msg: "{{ vars.split('\n') }}"
 # =========================================================
 #       PLAY -- Configure database tier
 # ---------------------------------------------------------
