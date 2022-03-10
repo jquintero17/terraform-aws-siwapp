@@ -1,4 +1,4 @@
 127.0.0.1   {{ ansible_hostname }}
 {% for host in groups['db'] %}
-{{ hostvars[host]['ansible_priv_ip'] }}     {{ hostvars[host]['name'] }}
+{{ hostvars[host]['ansible_priv_ip'] }}     {{ hostvars[host]['nodename'] }}
 {% endfor %}
