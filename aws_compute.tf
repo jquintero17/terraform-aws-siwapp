@@ -90,5 +90,5 @@ resource "aws_instance" "db3" {
   }
   # provisioner "local-exec" {
    # command = "ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -u ec2-user -i '${self.public_ip},' --private-key ${var.pvt_key} ansible/site.yml"
-  }
+  #}
 }
