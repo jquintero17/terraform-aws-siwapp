@@ -80,6 +80,8 @@ wsrep_slave_threads            = 4
 innodb-flush-log-at-trx-commit = 2
 wsrep_cluster_address          = 'gcomm://{% for host in databases %}{% if not loop.last %}{{hostvars[host]['ansible_priv_ip']}},{% else %}{{hostvars[host]['ansible_priv_ip']}}{% endif %}{% endfor %}'
 wsrep_cluster_name             = '{{ galera_db_cluster_name }}'
+wsrep_node_address             = '{{ leadip }}'
+wsrep_node_name                = '{{ leadname }}'
 
 # MYISAM REPLICATION SUPPORT #
 wsrep_replicate_myisam         = ON
