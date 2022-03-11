@@ -1,26 +1,26 @@
 #- name: Add mariadb yum repo
 #  yum_repository:
-    name: MariaDB
-    baseurl: http://yum.mariadb.org/10.1/centos7-amd64
-    gpgkey: https://yum.mariadb.org/RPM-GPG-KEY-MariaDB
-    gpgcheck: yes
-    description: mariadb
-    state: present
+#    name: MariaDB
+#    baseurl: http://yum.mariadb.org/10.1/centos7-amd64
+#    gpgkey: https://yum.mariadb.org/RPM-GPG-KEY-MariaDB
+#    gpgcheck: yes
+#    description: mariadb
+#    state: present
 #
 #- name: Create local hosts file
-  template:
-    src: hosts
-    dest: /etc/hosts
+#  template:
+#    src: hosts
+#    dest: /etc/hosts
 #
 #- name: Create new galera cluster on master node
-  command: sudo dnf install https://dl.fedoraproject.org/pub/epel/epel-release-latest-8.noarch.rpm -y
+#  command: sudo dnf install https://dl.fedoraproject.org/pub/epel/epel-release-latest-8.noarch.rpm -y
 #
 ##- name: Create new galera cluster on master node
  # command: dnf --enablerepo=epel-testing install python3-mysqlclient -y
 #
 #- name: Turn off SELinux
-  selinux:
-    state: disabled
+#  selinux:
+#    state: disabled
 #
 ## - name: Perform yum update for all packages
 ##   yum:
@@ -29,85 +29,85 @@
 #
 #
 #- name: Disable firewalld
-  systemd:
-    name: firewalld
-    state: stopped
-    enabled: no
-  ignore_errors: yes
+#  systemd:
+#    name: firewalld
+#    state: stopped
+#    enabled: no
+#  ignore_errors: yes
 #
 #- name: Import mariadb gpg key
-  rpm_key:
-    state: present
-    key: https://yum.mariadb.org/RPM-GPG-KEY-MariaDB
+#  rpm_key:
+#    state: present
+#    key: https://yum.mariadb.org/RPM-GPG-KEY-MariaDB
 #
 #- name: Create mysql group
-  group:
-    name: mysql
-    gid: 250
-    system: yes
-    state: present
+#  group:
+#    name: mysql
+#    gid: 250
+#    system: yes
+#    state: present
 #
 #- name: Create mysql user and add to mysql group
-  user:
-    name: mysql
-    uid: 250
-    system: yes
-    group: mysql
-    state: present
+#  user:
+#    name: mysql
+#    uid: 250
+#    system: yes
+#    group: mysql
+#    state: present
 #
 #- name: Install yum packages
-  yum:
-      name: python3-PyMySQL, mariadb-server, mariadb, galera, less, which, socat, pwgen, nmap, wget
-      state: latest
+#  yum:
+#      name: python3-PyMySQL, mariadb-server, mariadb, galera, less, which, socat, pwgen, nmap, wget
+#      state: latest
 #
 #- name: Stop the mariadb service
-  systemd:
-    name: mariadb
-    state: stopped
-    enabled: yes
-  ignore_errors: yes
+#  systemd:
+#    name: mariadb
+#    state: stopped
+#    enabled: yes
+#  ignore_errors: yes
 #
 #- name: Enable and start the mariadb service
-  systemd:
-    name: mariadb
-    state: started
-    enabled: yes
-    daemon_reload: yes
-  ignore_errors: yes
+#  systemd:
+#    name: mariadb
+#    state: started
+#    enabled: yes
+#    daemon_reload: yes
+#  ignore_errors: yes
 #
 #- name: update mysql root password for all root accounts
-  mysql_user: 
-    name: root
-    host: "{{ item }}"
-    password: "{{ galera_db_root_pwd }}"
-    check_implicit_admin: yes
-    login_user: root
-    login_password: "{{ galera_db_root_pwd }}"
-    state: present
-  with_items:
-    - "{{ ansible_hostname }}"
-    - 127.0.0.1
-    - ::1
-    - localhost
+#  mysql_user: 
+#    name: root
+#    host: "{{ item }}"
+#    password: "{{ galera_db_root_pwd }}"
+#    check_implicit_admin: yes
+#    login_user: root
+#    login_password: "{{ galera_db_root_pwd }}"
+#    state: present
+#  with_items:
+#    - "{{ ansible_hostname }}"
+#    - 127.0.0.1
+#    - ::1
+#    - localhost
 #
 #- name: Remove the test database
-  mysql_db:
-    name: test
-    state: absent
-    login_user: root
-    login_password: "{{ galera_db_root_pwd }}"
+#  mysql_db:
+#    name: test
+#    state: absent
+#    login_user: root
+#    login_password: "{{ galera_db_root_pwd }}"
 #
 #- name: Add user siwapp to MariaDB
-  mysql_user:
-    name: "{{ galera_db_user }}"
-    password: "{{ galera_db_user_pwd }}"
-    login_user: root
-    login_password: "{{ galera_db_root_pwd }}"
-    host: "%"
-    priv: '*.*:ALL'
-    state: present
+#  mysql_user:
+#    name: "{{ galera_db_user }}"
+#    password: "{{ galera_db_user_pwd }}"
+#    login_user: root
+#    login_password: "{{ galera_db_root_pwd }}"
+#    host: "%"
+#    priv: '*.*:ALL'
+#    state: present
 #
-#- name: Stop the mariadb service
+- name: Stop the mariadb service
   systemd:
     name: mariadb
     state: stopped
