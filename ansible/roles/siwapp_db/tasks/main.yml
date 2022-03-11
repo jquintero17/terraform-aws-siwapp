@@ -117,7 +117,7 @@
   vars:
     databases: "{{groups['db']}}"
     leadip: "{% for host in groups['db'] %}{% if hostvars[host]['tags']['cluster_lead']=='true' %}{{ hostvars[host]['ansible_priv_ip']}} {% endif %}{% endfor %}"
-    leadname: "{% for host in groups['db'] %} {% if hostvars[host]['tags']['cluster_lead']=='true' %}{{ hostvars[host]['private_dns_name']}} {% endif %} {% endfor %}"
+    leadname: "{% for host in groups['db'] %}{% if hostvars[host]['tags']['cluster_lead']=='true' %}{{ hostvars[host]['private_dns_name']}}{% endif %}{% endfor %}"
   template:
     src: server.cnf
     dest: /etc/my.cnf.d/server.cnf
