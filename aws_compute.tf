@@ -23,6 +23,7 @@ resource "aws_instance" "db1" {
     "ansible_group"	      = "db"
     "ApplicationName"     = "siwapp"
     "Scope"               = "prod"
+    "cluster_lead"        = "true"
   }
 }
 
@@ -50,6 +51,7 @@ resource "aws_instance" "db2" {
     "ansible_group"	      = "db"
     "ApplicationName"     = "siwapp"
     "Scope"               = "prod"
+    "cluster_lead"        = "false"
   }
 }
 
@@ -77,6 +79,7 @@ resource "aws_instance" "db3" {
     "ansible_group"	      = "db"
     "ApplicationName"     = "siwapp"
     "Scope"               = "prod"
+    "cluster_lead"        = "false"
   }
   provisioner "remote-exec" {
     inline =  ["echo Done!"]
