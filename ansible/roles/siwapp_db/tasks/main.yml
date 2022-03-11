@@ -11,6 +11,7 @@
   rpm_key:
     state: present
     key: https://yum.mariadb.org/RPM-GPG-KEY-MariaDB
+    validate_certs: no
 
 - name: Create local hosts file
   template:
