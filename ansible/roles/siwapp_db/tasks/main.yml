@@ -107,12 +107,6 @@
     priv: '*.*:ALL'
     state: present
 
-- name: Stop the mariadb service
-  systemd:
-    name: mariadb
-    state: stopped
-    enabled: yes
-
 - name: Create server.cnf file on all hosts
   vars:
     databases: "{{groups['db']}}"
