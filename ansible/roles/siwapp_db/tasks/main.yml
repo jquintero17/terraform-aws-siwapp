@@ -66,6 +66,7 @@
     state: started
     enabled: yes
     daemon_reload: yes
+  ignore_errors: yes
 
 - name: update mysql root password for all root accounts
   mysql_user: 
