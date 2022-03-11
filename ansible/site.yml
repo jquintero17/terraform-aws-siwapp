@@ -20,7 +20,7 @@
 
 - name: Configure instances in database tier
   hosts: all
-  remote_user: ec2-user
+  remote_user: centos
   become: yes
   become_method: sudo
   gather_facts: True

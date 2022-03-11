@@ -1,11 +1,16 @@
 - name: Add mariadb yum repo
   yum_repository:
     name: MariaDB
-    baseurl: https://yum.mariadb.org/10.4/rhel8-amd64
+    baseurl: http://yum.mariadb.org/10.1/centos7-amd64
     gpgkey: https://yum.mariadb.org/RPM-GPG-KEY-MariaDB
     gpgcheck: yes
     description: mariadb
     state: present
+
+- name: Import mariadb gpg key
+  rpm_key:
+    state: present
+    key: https://yum.mariadb.org/RPM-GPG-KEY-MariaDB
 
 - name: Create local hosts file
   template:
@@ -40,11 +45,6 @@
     enabled: no
   ignore_errors: yes
 
-- name: Import mariadb gpg key
-  rpm_key:
-    state: present
-    key: https://yum.mariadb.org/RPM-GPG-KEY-MariaDB
-
 - name: Create mysql group
   group:
     name: mysql
@@ -60,17 +60,15 @@
     group: mysql
     state: present
 
+#- name: Install yum packages
+#  yum:
+#      name: python3-PyMySQL, mariadb-server, mariadb, galera, less, which, socat, pwgen, nmap, wget
+#      state: latest
+
 - name: Install yum packages
   yum:
-      name: python3-PyMySQL, mariadb-server, mariadb, galera, less, which, socat, pwgen, nmap, wget
+      name: MariaDB-server, MariaDB-client, galera, less, which, socat, pwgen, nmap, wget, MySQL-python
       state: latest
-
-- name: Stop the mariadb service
-  systemd:
-    name: mariadb
-    state: stopped
-    enabled: yes
-  ignore_errors: yes
 
 - name: Enable and start the mariadb service
   systemd:
@@ -111,6 +109,12 @@
     host: "%"
     priv: '*.*:ALL'
     state: present
+
+- name: Stop the mariadb service
+  systemd:
+    name: mariadb
+    state: stopped
+    enabled: yes
 
 - name: Create server.cnf file on all hosts
   vars:
