@@ -1,7 +1,7 @@
 - name: Add mariadb yum repo
   yum_repository:
     name: MariaDB
-    baseurl: http://yum.mariadb.org/10.1/centos7-amd64
+    baseurl: https://yum.mariadb.org/10.4/rhel8-amd64
     gpgkey: https://yum.mariadb.org/RPM-GPG-KEY-MariaDB
     gpgcheck: yes
     description: mariadb
@@ -12,11 +12,16 @@
     src: hosts
     dest: /etc/hosts
 
-- name: Create new galera cluster on master node
-  command: sudo dnf install https://dl.fedoraproject.org/pub/epel/epel-release-latest-8.noarch.rpm -y
+- name: Install EPEL release
+  yum:
+    name:
+    - https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
+    - libselinux-python
+    state: latest
 
-#- name: Create new galera cluster on master node
-# command: dnf --enablerepo=epel-testing install python3-mysqlclient -y
+#- name: EPEL
+# command: sudo dnf install https://dl.fedoraproject.org/pub/epel/epel-release-latest-8.noarch.rpm -y
+
 
 - name: Turn off SELinux
   selinux:
