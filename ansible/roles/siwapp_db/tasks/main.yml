@@ -108,8 +108,8 @@
 - name: Create server.cnf file on all hosts
   vars:
     databases: "{{groups['db']}}"
-    leadip: "{% if hostvars[inventory_hostname]['tags']['cluster_lead']=='true' %}{{ hostvars[inventory_hostname]['ansible_priv_ip']}} {% endif %}"
-    leadname: "{% if hostvars[inventory_hostname]['tags']['cluster_lead']=='true' %}{{ hostvars[inventory_hostname]['private_dns_name']}} {% endif %}"
+    leadip: "{% if hostvars[inventory_hostname]['tags']['cluster_lead']==true %}{{ hostvars[inventory_hostname]['ansible_priv_ip']}} {% endif %}"
+    leadname: "{% if hostvars[inventory_hostname]['tags']['cluster_lead']==true %}{{ hostvars[inventory_hostname]['private_dns_name']}} {% endif %}"
   template:
     src: server.cnf
     dest: /etc/my.cnf.d/server.cnf
