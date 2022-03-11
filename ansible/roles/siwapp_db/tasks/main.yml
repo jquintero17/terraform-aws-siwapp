@@ -60,6 +60,13 @@
       name: python3-PyMySQL, mariadb-server, mariadb, galera, less, which, socat, pwgen, nmap, wget
       state: latest
 
+- name: Stop the mariadb service
+  systemd:
+    name: mariadb
+    state: stopped
+    enabled: yes
+  ignore_errors: yes
+  
 - name: Enable and start the mariadb service
   systemd:
     name: mariadb
