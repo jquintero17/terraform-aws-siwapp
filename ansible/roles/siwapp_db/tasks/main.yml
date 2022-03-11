@@ -124,13 +124,13 @@
 
 - name: Create new galera cluster on master node
   command: galera_new_cluster
-  when: hostvars[ansible_hostname]['tags']['cluster_lead']=='true'
+  when: hostvars[inventory_hostname]['tags']['cluster_lead']=='true'
 
 - name: Copy sql dump to master node
   copy:
     src: siwapp.sql
     dest: /tmp/siwapp.sql
-  when: hostvars[ansible_hostname]['tags']['cluster_lead']=='true'
+  when: hostvars[inventory_hostname]['tags']['cluster_lead']=='true'
 
 - name: Import sql dump for siwapp on master node
   mysql_db:
@@ -139,7 +139,7 @@
     state: import
     name: all
     target: /tmp/{{ galera_db_name }}.sql
-  when: hostvars[ansible_hostname]['tags']['cluster_lead']=='true'
+  when: hostvars[inventory_hostname]['tags']['cluster_lead']=='true'
 
 - name: Add user haproxy to MariaDB with ro privs
   mysql_user:
@@ -148,14 +148,14 @@
     login_user: root
     login_password: "{{ galera_db_root_pwd }}"
     state: present
-  when: hostvars[ansible_hostname]['tags']['cluster_lead']=='true'
+  when: hostvars[inventory_hostname]['tags']['cluster_lead']=='true'
 
 - name: Enable and start the mariadb service
   systemd:
     name: mariadb
     state: started
     enabled: yes
-  when: ansible_hostname not in groups['db'][0].name
+  when: hostvars[inventory_hostname]['tags']['cluster_lead']!='true'
 
 - name: Create siwapp fixup script directory if it doesn't exist
   file:
