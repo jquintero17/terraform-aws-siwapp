@@ -1,3 +1,19 @@
+- name: Create 'wheel' user group
+  group:
+    name: wheel
+    state: present
+
+- name: Allow 'wheel' group to have passwordless sudo
+  lineinfile:
+    dest: /etc/sudoers
+    state: present
+    regexp: '^%wheel'
+    line: '%wheel ALL=(ALL) NOPASSWD: ALL'
+    validate: 'visudo -cf %s'
+
+- name: Add sudoers users to wheel group
+  user: name=siwapp groups=wheel append=yes state=present createhome=yes
+
 - name: Add mariadb yum repo
   yum_repository:
     name: MariaDB
