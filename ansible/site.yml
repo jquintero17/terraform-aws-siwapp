@@ -18,7 +18,7 @@
 #       PLAY -- Configure database tier
 # ---------------------------------------------------------
 
-- name: Configure instances in database tier
+- name: Configure instances in application tier
   hosts: all
   remote_user: centos
   become: yes
@@ -32,4 +32,4 @@
       timeout: 300
     
   roles:
-  - siwapp_db
+  - siwapp_app

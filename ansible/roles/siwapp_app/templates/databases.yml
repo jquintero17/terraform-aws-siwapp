@@ -1,0 +1,14 @@
+all:
+  doctrine:
+    class: sfDoctrineDatabase
+    param:
+      dsn: 'mysql:host={{siwapp_deployment.haproxy_db[0].ip}};dbname=siwapp'
+      username: '{{galera_db_user}}'
+      password: '{{galera_db_user_pwd}}'
+test:
+  doctrine:
+    class: sfDoctrineDatabase
+    param:
+      dsn: 'mysql:host={{siwapp_deployment.haproxy_db[0].ip}};dbname=siwapp_test'
+      username: '{{galera_db_user}}'
+      password: '{{galera_db_user_pwd}}'

@@ -1,0 +1,86 @@
+---
+
+# Tasks for configuring the application instances
+
+- name: Install packages with yum
+  yum:
+    name: git, httpd, php, php-mysql, php-xml, nginx, mysql
+    state: present
+
+- name: Retrieve HTML files from git
+  git:
+    repo: https://github.com/siwapp/siwapp-sf1.git
+    dest: /var/www/html/
+    clone: yes
+    update: yes
+    force: yes
+
+- name: Create cache directory
+  file:
+    path: /var/www/html/cache
+    state: directory
+    mode: 0777
+
+- name: Change file permissions
+  file:
+    path: /var/www/html/web/config.php
+    mode: 0777
+
+- name: Create uploads directory
+  file:
+    path: /var/www/html/web/uploads
+    state: directory
+    mode: 0777
+
+- name: Change directory ownership to apache
+  file:
+    path: /var/www/html/
+    state: directory
+    owner: apache
+    group: apache
+
+- name: Copy pre_installer_code.php with lines removed
+  template:
+    src: pre_installer_code.php
+    dest: /var/www/html/web/pre_installer_code.php
+
+- name: Create modified httpd.conf file
+  template:
+    src: httpd.conf
+    dest: /etc/httpd/conf/httpd.conf
+
+- name: Create modified layout.php file
+  template:
+    src: layout.php
+    dest: /var/www/html/apps/siwapp/templates/layout.php
+
+- name: Create modified databases.yml file
+  template:
+    src: databases.yml
+    dest: /var/www/html/config/databases.yml
+    mode: 0777
+
+# is there a reason that the firefly script creates a
+# config.php.bak file with sw_installed set to false?
+# I'm not creating the .bak file here.
+- name: Create modified config.php file
+  template:
+    src: config.php
+    dest: /var/www/html/web/config.php
+
+- name: Enable and start the httpd service
+  systemd:
+    name: httpd
+    state: started
+    enabled: yes
+
+- name: Copy nginx conf file
+  template:
+    src: siwapp.conf
+    dest: /etc/nginx/conf.d/siwapp.conf
+
+- name: Enable and start the nginx service
+  systemd:
+    name: nginx
+    state: started
+    enabled: yes
