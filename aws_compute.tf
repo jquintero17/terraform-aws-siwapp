@@ -87,7 +87,7 @@ resource "aws_instance" "db3" {
     connection {
       host        = self.public_ip
       type        = "ssh"
-      user        = "ec2-user"
+      user        = "centos"
       private_key = file(var.pvt_key)
     }
   }

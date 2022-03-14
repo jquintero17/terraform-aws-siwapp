@@ -114,7 +114,7 @@ variable "rt_cidr_block" {
 variable "instance_ami" {
   description = "ID of the AMI used"
   type        = string
-  default     = "ami-011b3ccf1bd6db744"
+  default     = "ami-06cf02a98a61f9f5e"
 }
  
 variable "instance_type" {
