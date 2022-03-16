@@ -1,6 +1,6 @@
 # create-instance.tf
  
-resource "aws_instance" "db1" {
+resource "aws_instance" "app1" {
   ami                         = var.instance_ami
   availability_zone           = "${var.aws_region}${var.aws_region_az}"
   instance_type               = var.instance_type
@@ -18,7 +18,7 @@ resource "aws_instance" "db1" {
  
   tags = {
     "Owner"               = var.owner
-    "Name"                = "Siwapp_db1"
+    "Name"                = "siwapp_app1"
     "KeepInstanceRunning" = "false"
     "ansible_group"	      = "db"
     "ApplicationName"     = "siwapp"
@@ -27,7 +27,7 @@ resource "aws_instance" "db1" {
   }
 }
 
-resource "aws_instance" "db2" {
+resource "aws_instance" "app2" {
   ami                         = var.instance_ami
   availability_zone           = "${var.aws_region}${var.aws_region_az}"
   instance_type               = var.instance_type
@@ -45,7 +45,7 @@ resource "aws_instance" "db2" {
  
   tags = {
     "Owner"               = var.owner
-    "Name"                = "Siwapp_db2"
+    "Name"                = "siwapp_app2"
     "KeepInstanceRunning" = "false"
     "ansible_group"       = "db"
     "ansible_group"	      = "db"
@@ -55,7 +55,7 @@ resource "aws_instance" "db2" {
   }
 }
 
-resource "aws_instance" "db3" {
+resource "aws_instance" "app3" {
   ami                         = var.instance_ami
   availability_zone           = "${var.aws_region}${var.aws_region_az}"
   instance_type               = var.instance_type
@@ -73,7 +73,7 @@ resource "aws_instance" "db3" {
  
   tags = {
     "Owner"               = var.owner
-    "Name"                = "Siwapp_db3"
+    "Name"                = "siwapp_app3"
     "KeepInstanceRunning" = "false"
     "ansible_group"       = "db"
     "ansible_group"	      = "db"

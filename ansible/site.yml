@@ -32,4 +32,5 @@
       timeout: 300
     
   roles:
+  - siwapp-app
   - tet-sensor
