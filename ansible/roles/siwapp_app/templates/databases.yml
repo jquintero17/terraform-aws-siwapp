@@ -2,7 +2,7 @@ all:
   doctrine:
     class: sfDoctrineDatabase
     param:
-      dsn: 'mysql:host=192.168.92.171;dbname=siwapp'
+      dsn: 'mysql:host=192.168.92.127;dbname=siwapp'
       username: '{{galera_db_user}}'
       password: '{{galera_db_user_pwd}}'
 test:
