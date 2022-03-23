@@ -12,7 +12,6 @@ variable "aws_region" {
 variable "owner" {
   description = "Configuration owner"
   type        = string
-  default = "Jason Lunde"
 }
  
 variable "aws_region_az" {
