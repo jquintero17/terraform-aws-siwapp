@@ -2,13 +2,13 @@ all:
   doctrine:
     class: sfDoctrineDatabase
     param:
-      dsn: 'mysql:host=192.168.92.127;dbname=siwapp'
+      dsn: 'mysql:host=192.168.88.6;dbname=siwapp'
       username: '{{galera_db_user}}'
       password: '{{galera_db_user_pwd}}'
 test:
   doctrine:
     class: sfDoctrineDatabase
     param:
-      dsn: 'mysql:host=192.168.92.127;dbname=siwapp_test'
+      dsn: 'mysql:host=192.168.88.6;dbname=siwapp_test'
       username: '{{galera_db_user}}'
       password: '{{galera_db_user_pwd}}'

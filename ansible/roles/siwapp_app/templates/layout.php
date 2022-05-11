@@ -18,7 +18,7 @@
     <a id="hd-top-logo" href="<?php echo url_for('@homepage') ?>">
       <?php echo image_tag('logo.gif', 'alt=siwapp width=210 height=100 border=0') ?>
       <span class="version">
-{{ansible_hostname}}
+This is {{ansible_hostname}} in AWS
       </span>
     </a>
     

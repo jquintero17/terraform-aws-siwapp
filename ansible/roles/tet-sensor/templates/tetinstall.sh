@@ -31,7 +31,7 @@
 # Do not trust system's PATH
 export PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 
-SCRIPT_VERSION="3.6.1.5"
+SCRIPT_VERSION="3.6.1.5-PATCH-3.6.1.21"
 LOG_FILE=
 CL_HTTPS_PROXY=""
 PROXY_ARGS=
@@ -601,7 +601,7 @@ function check_sensor_exists {
     return 1
   fi
   if [ ! -z "$(rpm -qa tet-sensor 2>/dev/null)" ] || [ ! -z "$(rpm -qa tet-sensor-site 2>/dev/null)" ] ; then
-    log "Sensor found in rpm db"
+    log "Sensor already registered in rpm db. Remove existing sensor rpm before new installation"
     return 1
   fi
   log "Sensor not found"
@@ -682,9 +682,9 @@ function perform_install {
   cd $TMP_DIR
 
 cat << EOF > tet.user.cfg
-ACTIVATION_KEY=8e59accf52f3465963c5084369fdd4317e981b66
+ACTIVATION_KEY=1e033dbe40030dad1d909fbab2ba5df3a4ff9e25
 HTTPS_PROXY=$CL_HTTPS_PROXY
-INSTALLATION_ID=jason_lunde_20220316150836
+INSTALLATION_ID=jason_lunde_20220510145017
 USER_LABELS=
 UNPRIVILEGED_USER=${UNPRIVILEGED_USER}
 EOF
@@ -994,7 +994,7 @@ EOF
   LOCAL_RPMDB=$TMP_DIR
   rpm --initdb --dbpath $LOCAL_RPMDB
   rpm --dbpath $LOCAL_RPMDB --import $TMP_DIR/sensor-gpg.key
-  gpg_ok=$(rpm -K $TMP_DIR/$RPM_FILE --dbpath $LOCAL_RPMDB)
+  gpg_ok=$(LANG=en_US.UTF-8 rpm -K $TMP_DIR/$RPM_FILE --dbpath $LOCAL_RPMDB)
   ret=$?
   if [ $ret -eq 0 ] ; then
     pgp_signed=$(echo $gpg_ok | grep -e "gpg\|pgp" -e "signatures OK")
