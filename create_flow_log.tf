@@ -1,5 +1,5 @@
 resource "aws_flow_log" "secureworkload" {
-  log_destination      = "data.aws_s3_bucket.flowlogs.arn"
+  log_destination      = data.aws_s3_bucket.flowlogs.arn
   log_destination_type = "s3"
   traffic_type         = "ALL"
   vpc_id               = aws_vpc.vpc.id

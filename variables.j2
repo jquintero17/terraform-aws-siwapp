@@ -12,7 +12,7 @@ variable "aws_region" {
 variable "owner" {
   description = "Configuration owner"
   type        = string
-  default     = "{{ owner }}
+  default     = "{{ owner }}"
 }
  
 variable "aws_region_az" {
@@ -45,7 +45,7 @@ variable "vpc_dns_hostnames" {
 
 variable "pvt_key" {
   type    = string
-  default = "terraform.pem"
+  default = "/root/{{ dir_name }}/repo/terraform.pem"
 }
  
 # Variables for Security Group
