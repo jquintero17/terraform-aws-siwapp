@@ -49,6 +49,7 @@
     ansible.builtin.template:
       src: terraform.j2
       dest: /root/{{ dir_name }}/repo/terraform.pem
+      mode: '400'
 
 
 
