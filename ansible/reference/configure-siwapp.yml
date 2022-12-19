@@ -1,0 +1,203 @@
+---
+# This playbook **CONFIGURES** EC2 instances for SIWAPP.
+# It REQUIRES instances to have the following tags:
+# - Application: this will be set to 'siwapp' for all instances
+# - Pod: pod_number is defined in the vars section below and is used to allow
+#   creation of multiple pods for a lab environment
+# - Class: specifies the application tier of each instance. For example: app,
+#   database, haproxy, etc.
+#
+# It is recommended to set the ANSIBLE_FORKS environment variable (or add it to
+# your ansible.cfg) to the number of instances created so that yum updates of
+# all instances can occur in parallel. The ansible default for forks is 5,
+# which is too low. To check if forks has been changed from the default:
+#         ansible-config dump --only-changed
+#
+# Doron Chosnek, Cisco Systems, 2018
+# Brandon Beck, Cisco Systems, 2018
+#
+
+# =========================================================
+#       PLAY -- Create global host groups
+# ---------------------------------------------------------
+- name: Collect facts about EC2 instances to create groups
+  hosts: localhost
+  connection: local
+  gather_facts: True
+
+  vars:
+      region: us-east-1
+      pod_number: 4
+
+  tasks:
+
+  - name: Gather facts about all EC2 instances for siwapp in the given pod
+    ec2_instance_facts:
+      region: "{{region}}"
+      filters:
+        "tag:Application": siwapp
+        "tag:Pod": "4"
+        # "{{ {pod_tag: pod_number, app_tag: app_value} }}"
+    # vars:
+    #   pod_tag: "tag:Pod"
+    #   app_tag: "tag:Application"
+    #   app_value: siwapp
+    register: ec2
+
+  - debug: var=ec2
+
+  - name: Gather facts about database EC2 instances for siwapp in the given pod
+    ec2_instance_facts:
+      region: "{{region}}"
+      filters:
+        "tag:Application": siwapp
+        "tag:Pod": "4"
+        "tag:Class": database
+    register: ec2_database
+
+  - name: Gather facts about application EC2 instances for siwapp in the given pod
+    ec2_instance_facts:
+      region: "{{region}}"
+      filters:
+        "tag:Application": siwapp
+        "tag:Pod": "4"
+        "tag:Class": application
+    register: ec2_application
+
+  # Put the instances into a host groups by tag:Class
+  - name: Create host group for database instances
+    add_host:
+      hostname: "{{ item.public_ip_address }}"
+      groups: [siwappdb, siwappall]
+    loop: "{{ec2.instances}}"
+    loop_control: 
+      label: "Instance {{item.instance_id}} at {{item.public_ip_address}}"
+    when: item.tags.Class == "database"
+
+  - name: Create host group for database haproxy instances
+    add_host:
+      hostname: "{{ item.public_ip_address }}"
+      groups: [siwapphaproxydb, siwappall]
+    loop: "{{ec2.instances}}"
+    loop_control: 
+      label: "Instance {{item.instance_id}} at {{item.public_ip_address}}"
+    when: item.tags.Class == "haproxy-db"
+
+  - name: Create host group for application instances
+    add_host:
+      hostname: "{{ item.public_ip_address }}"
+      groups: [siwappapp, siwappall]
+    loop: "{{ec2.instances}}"
+    loop_control: 
+      label: "Instance {{item.instance_id}} at {{item.public_ip_address}}"
+    when: item.tags.Class == "application"
+
+  - name: Create host group for application haproxy instances
+    add_host: 
+      hostname: "{{ item.public_ip_address }}"
+      groups: [siwapphaproxyapp, siwappall]
+    loop: "{{ec2.instances}}"
+    loop_control: 
+      label: "Instance {{item.instance_id}} at {{item.public_ip_address}}"
+    when: item.tags.Class == "haproxy-app"
+
+  - name: Create host group for load simulator instances
+    add_host: 
+      hostname: "{{ item.public_ip_address }}"
+      groups: [siwapploadsim, siwappall]
+    loop: "{{ec2.instances}}"
+    loop_control: 
+      label: "Instance {{item.instance_id}} at {{item.public_ip_address}}"
+    when: item.tags.Class == "loadsim"
+
+  - name: Create provisioning variables file
+    vars:
+      instances: "{{ec2.instances}}"
+      dbinstances: "{{ec2_database.instances}}"
+      appinstances: "{{ec2_application.instances}}"
+    template:
+      src: pod_variables.j2
+      dest: provisioningVars.sh
+
+
+
+# =========================================================
+#       PLAY -- Actions for all instances
+# ---------------------------------------------------------
+
+- name: Configuration required for ALL servers
+  hosts: siwappall
+  remote_user: ec2-user
+  become: yes
+  become_method: sudo
+  gather_facts: False
+
+  tasks:
+
+  - selinux: state=disabled
+
+  - name: Install EPEL release
+    yum:
+      name: https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
+      state: latest
+
+  # - name: Transfer settings file
+  #   copy:
+  #     src: provisioningVars.sh
+  #     dest: /tmp/provisioningVars.sh
+
+  # - name: Create environment variables
+  #   script: provisioningVars.sh
+
+
+# =========================================================
+#       PLAY -- Actions for database instances
+# ---------------------------------------------------------
+
+- name: Configure database servers
+  hosts: siwappdb
+  remote_user: ec2-user
+  become: yes
+  become_method: sudo
+  gather_facts: False
+
+  tasks:
+
+  - yum_repository:
+      name: MariaDB
+      baseurl: http://yum.mariadb.org/10.1/centos7-amd64
+      gpgkey: https://yum.mariadb.org/RPM-GPG-KEY-MariaDB
+      gpgcheck: yes
+      description: mariadb
+      state: present
+
+  - yum:
+      name: MariaDB-server, MariaDB-client, galera, less, which, socat, pwgen, firewalld, nmap, wget
+      state: latest
+
+  - name: Start and enable MariaDB
+    systemd:
+      name: mariadb
+      state: started
+      enabled: yes
+
+  - name: Add user mysql to MariaDB
+    mysql_user:
+      name: siwapp
+      password: siwapp
+      login_user: mysql
+      login_password: siwapp
+      host: "{{item}}"
+      loop:
+        - "{{ ansible_hostname }}"
+        - 127.0.0.1
+        - ::1
+        - localhost
+
+  - name: Create a new database
+    mysql_db:
+      name: NewDB
+      state: present
+      login_user: mysql
+      login_password: siwapp
+

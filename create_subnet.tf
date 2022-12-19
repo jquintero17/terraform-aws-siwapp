@@ -8,6 +8,6 @@ resource "aws_subnet" "subnet" {
  
   tags = {
     "Owner" = var.owner
-    "Name"  = "terraform-subnet"
+    "Name"  = "siwapp-subnet"
   }
 }

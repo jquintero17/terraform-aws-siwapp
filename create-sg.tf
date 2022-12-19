@@ -37,6 +37,6 @@ resource "aws_security_group" "sg" {
  
   tags = {
     "Owner" = var.owner
-    "Name"  = "terraform-sg"
+    "Name"  = "siwapp-sg"
   }
 }

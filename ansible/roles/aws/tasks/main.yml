@@ -1,0 +1,236 @@
+---
+
+# These tasks **CREATE** EC2 instances for SIWAPP and put them in host groups
+# so that other tasks can configure them properly. These tasks are idempotent;
+# instances will not be created if instances with the proper tags already
+# exist. If the instances already exist, they will not be altered (tags and
+# security groups will not be altered).
+# It will create instances with the following tags:
+# - Application: this will be set to 'siwapp' for all instances
+# - Pod: pod_number is defined in the vars section below and is used to allow
+#   creation of multiple pods for a lab environment
+# - Class: specifies the application tier of each instance. For example: app,
+#   database, haproxy, etc.
+#
+# The first task creates instances based on the exact_count (rather than count)
+# parameter, which changes how the EC2 module returns data. In this mode, ALL
+# instances that match the given tags (not just new or existing instances)
+# are returned in the "tagged_instances" portion of the JSON. So when we create
+# host groups based on the return value, we can get ALL of the hosts from that
+# one portion of the JSON.
+# Details of this can be found by searching for the return value of the
+# enforce_count function at:
+# https://github.com/ansible/ansible/blob/devel/lib/ansible/modules/cloud/amazon/ec2.py
+
+- name: Launch database instances
+  ec2:
+    region: "{{region}}"
+    key_name: "{{key_name}}"
+    group: "{{security_group}}"
+    instance_type: "{{instance_type}}"
+    image: "{{image}}"
+    # Must wait to add public IP to the host group
+    wait: True
+    exact_count: "{{db_count}}"
+    count_tag:
+      Class: "{{database_tier_class}}"
+      Application: "{{application_name}}"
+      Pod: "{{pod_number}}"
+    # count: "{{db_count}}"
+    instance_tags:
+      Name: "{{database_tier_name}}"
+      Class: database
+      Application: "{{application_name}}"
+      Pod: "{{pod_number}}"
+  register: ec2db
+
+# This is *REALLY* helpful when encountering problems, but commented it out
+# for cleanliness.
+# - debug: var=ec2db
+#   verbosity: 2
+
+# Put the database servers into a host group
+# - name: Add new database instances to host inventory group
+#   add_host: 
+#     hostname: "{{item.public_ip}}"
+#     groups: just_created
+#   loop: "{{ec2db.instances}}"
+#   loop_control: 
+#     label: "Instance {{item.id}} at {{item.public_ip}}"
+
+- name: Add all database instances to host inventory group
+  add_host: 
+    hostname: "{{item.public_ip}}"
+    groups: siwappall, siwappdatabase
+  loop: "{{ec2db.tagged_instances}}"
+  loop_control: 
+    label: "Instance {{item.id}} at {{item.public_ip}}"
+
+# Launch the database proxy instance with the following parameters.
+- name: Launch database haproxy instances
+  ec2:
+    region: "{{region}}"
+    key_name: "{{key_name}}"
+    group: "{{security_group}}"
+    instance_type: "{{instance_type}}"
+    image: "{{image}}"
+    # Must wait to add public IP to the host group
+    wait: True
+    exact_count: 1
+    count_tag:
+      Class: "{{haproxy_db_tier_class}}"
+      Application: "{{application_name}}"
+      Pod: "{{pod_number}}"
+    instance_tags:
+      Name: "{{haproxy_db_tier_name}}"
+      Class: "{{haproxy_db_tier_class}}"
+      Application: "{{application_name}}"
+      Pod: "{{pod_number}}"
+  register: ec2dbha
+
+# # - debug: var=ec2
+
+# Put the database proxy server into a host group
+# - name: Add new database haproxy instances to host inventory group
+#   add_host: 
+#     hostname: "{{item.public_ip}}"
+#     groups: just_created
+#   loop: "{{ec2dbha.instances}}"
+#   loop_control: 
+#     label: "Instance {{item.id}} at {{item.public_ip}}"
+
+- name: Add all database haproxy instances to host inventory group
+  add_host: 
+    hostname: "{{item.public_ip}}"
+    groups: siwappall, siwapphaproxydb
+  loop: "{{ec2dbha.tagged_instances}}"
+  loop_control: 
+    label: "Instance {{item.id}} at {{item.public_ip}}"
+
+# Launch the app server instances with the following parameters.
+- name: Launch application server instances
+  ec2:
+    region: "{{region}}"
+    key_name: "{{key_name}}"
+    group: "{{security_group}}"
+    instance_type: "{{instance_type}}"
+    image: "{{image}}"
+    # Must wait to add public IP to the host group
+    wait: True
+    exact_count: "{{app_count}}"
+    count_tag:
+      Class: "{{application_tier_class}}"
+      Application: "{{application_name}}"
+      Pod: "{{pod_number}}"
+    instance_tags:
+      Name: "{{application_tier_name}}"
+      Class: "{{application_tier_class}}"
+      Application: "{{application_name}}"
+      Pod: "{{pod_number}}"
+  register: ec2app
+
+# Put the application servers into a host group
+# - name: Add new application instances to host inventory group
+#   add_host: 
+#     hostname: "{{item.public_ip}}"
+#     groups: just_created
+#   loop: "{{ec2app.instances}}"
+#   loop_control: 
+#     label: "Instance {{item.id}} at {{item.public_ip}}"
+
+- name: Add all application instances to host inventory group
+  add_host: 
+    hostname: "{{item.public_ip}}"
+    groups: siwappall, siwappapplication
+  loop: "{{ec2app.tagged_instances}}"
+  loop_control: 
+    label: "Instance {{item.id}} at {{item.public_ip}}"
+
+# Launch the haproxy-app server instance with the following parameters.
+- name: Launch application haproxy instance
+  ec2:
+    region: "{{region}}"
+    key_name: "{{key_name}}"
+    group: "{{web_security_group}}"
+    instance_type: "{{instance_type}}"
+    image: "{{image}}"
+    # Must wait to add public IP to the host group
+    wait: True
+    exact_count: 1
+    count_tag:
+      Class: "{{haproxy_app_tier_class}}"
+      Application: "{{application_name}}"
+      Pod: "{{pod_number}}"
+    instance_tags:
+      Name: "{{haproxy_app_tier_name}}"
+      Class: "{{haproxy_app_tier_class}}"
+      Application: "{{application_name}}"
+      Pod: "{{pod_number}}"
+  register: ec2appha
+
+# Put the haproxy application servers into a host group
+# - name: Add new app haproxy instances to host inventory group
+#   add_host: 
+#     hostname: "{{item.public_ip}}"
+#     groups: just_created
+#   loop: "{{ec2appha.instances}}"
+#   loop_control: 
+#     label: "Instance {{item.id}} at {{item.public_ip}}"
+
+- name: Add all app haproxy instances to host inventory group
+  add_host: 
+    hostname: "{{item.public_ip}}"
+    groups: siwappall, siwapphaproxyapp
+  loop: "{{ec2appha.tagged_instances}}"
+  loop_control: 
+    label: "Instance {{item.id}} at {{item.public_ip}}"
+
+# Launch the load simulator instance with the following parameters.
+- name: Launch load simulator instance
+  ec2:
+    region: "{{region}}"
+    key_name: "{{key_name}}"
+    group: "{{security_group}}"
+    instance_type: "{{instance_type}}"
+    image: "{{image}}"
+    # Must wait to add public IP to the host group
+    wait: True
+    exact_count: "{{loadsim_count}}"
+    count_tag:
+      Class: "{{loadsim_tier_class}}"
+      Application: "{{application_name}}"
+      Pod: "{{pod_number}}"
+    instance_tags:
+      Name: "{{loadsim_tier_name}}"
+      Class: "{{loadsim_tier_class}}"
+      Application: "{{application_name}}"
+      Pod: "{{pod_number}}"
+  register: ec2load
+
+# Put the load simulator servers into a host group
+# - name: Add new load simulator instances to host inventory group
+#   add_host: 
+#     hostname: "{{item.public_ip}}"
+#     groups: just_created
+#   loop: "{{ec2load.instances}}"
+#   loop_control: 
+#     label: "Instance {{item.id}} at {{item.public_ip}}"
+
+- name: Add all load simulator instances to host inventory group
+  add_host: 
+    hostname: "{{item.public_ip}}"
+    groups: siwappall, siwapploadsim
+  loop: "{{ec2load.tagged_instances}}"
+  loop_control: 
+    label: "Instance {{item.id}} at {{item.public_ip}}"
+
+- name: Create provisioning variables file
+  vars:
+    ec2db: "{{ec2db}}"
+    ec2dbha: "{{ec2dbha}}"
+    ec2app: "{{ec2app}}"
+    ec2appha: "{{ec2appha}}"
+    ec2load: "{{ec2load}}"
+  template:
+    src: instances.yml
+    dest: deployment.yml

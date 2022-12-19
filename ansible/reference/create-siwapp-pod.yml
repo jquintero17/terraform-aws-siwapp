@@ -1,0 +1,210 @@
+---
+# This playbook **CREATES** EC2 instances for SIWAPP.
+# It will create (or remove) instances that have the following tags:
+# - Application: this will be set to 'siwapp' for all instances
+# - Pod: pod_number is defined in the vars section below and is used to allow
+#   creation of multiple pods for a lab environment
+# - Class: specifies the application tier of each instance. For example: app,
+#   database, haproxy, etc.
+#
+# It will remove instances when there are more instances of a certain type than
+# specified by the exact_count param of the EC2 module.
+#
+# It is recommended to set the ANSIBLE_FORKS environment variable (or add it to
+# your ansible.cfg) to the number of instances created so that yum updates of
+# all instances can occur in parallel. The ansible default for forks is 5,
+# which is too low. To check if forks has been changed from the default:
+#         ansible-config dump --only-changed
+#
+# Doron Chosnek, Cisco Systems, 2018
+# Brandon Beck, Cisco Systems, 2018
+#
+
+# =========================================================
+#       PLAY -- Create EC2 instances and group them
+# ---------------------------------------------------------
+- name: Stage all instances required for siwapp
+  hosts: localhost
+  connection: local
+  gather_facts: False
+
+  vars:
+      key_name: 'dchosnek m13'
+      instance_type: t2.micro
+      security_group: [default, "SSH only", ICMP]
+      image: ami-6871a115
+      region: us-east-1
+      pod_number: 4
+      db_count: 3
+      app_count: 3
+      loadsim_count: 1
+      application_name: siwapp
+
+  tasks:
+
+  # Launch the database instances with the following parameters.
+  - name: Launch database instances
+    ec2:
+      region: "{{region}}"
+      key_name: "{{key_name}}"
+      group: "{{security_group}}"
+      instance_type: "{{instance_type}}"
+      image: "{{image}}"
+      # Must wait to add public IP to the host group
+      wait: True
+      exact_count: "{{db_count}}"
+      count_tag:
+        Class: database
+        Application: "{{application_name}}"
+        Pod: "{{pod_number}}"
+      # count: "{{db_count}}"
+      instance_tags:
+        Name: siwapp-db
+        Class: database
+        Application: "{{application_name}}"
+        Pod: "{{pod_number}}"
+    register: ec2
+
+  # This is *REALLY* helpful when encountering problems, but commented it out
+  # for cleanliness. The verbosity parameter seems to be ignored in Ansible 2.5.
+  # - debug: var=ec2
+  #   verbosity: 2
+
+  # - name: Database EC2 instances
+  #   debug: msg="Existing instance at {{item}}"
+  #   loop: "{{ ec2.tagged_instances|map(attribute='public_ip')|list }}"
+
+  # Put the database servers into a host group
+  - name: Add database instances to host inventory group
+    add_host: 
+      hostname: "{{item.public_ip}}"
+      groups: just_created, siwappall, siwappdatabase
+    loop: "{{ec2.instances}}"
+    loop_control: 
+      label: "Instance {{item.id}} at {{item.public_ip}}"
+
+  # Launch the database proxy instance with the following parameters.
+  - name: Launch database haproxy instances
+    ec2:
+      region: "{{region}}"
+      key_name: "{{key_name}}"
+      group: "{{security_group}}"
+      instance_type: "{{instance_type}}"
+      image: "{{image}}"
+      # Must wait to add public IP to the host group
+      wait: True
+      exact_count: 1
+      count_tag:
+        Class: haproxy-db
+        Application: "{{application_name}}"
+        Pod: "{{pod_number}}"
+      instance_tags:
+        Name: siwapp-haproxy-db
+        Class: haproxy-db
+        Application: "{{application_name}}"
+        Pod: "{{pod_number}}"
+    register: ec2
+
+  # - debug: var=ec2
+
+  # Put the database proxy server into a host group
+  - name: Add database haproxy instances to host inventory group
+    add_host: 
+      hostname: "{{item.public_ip}}"
+      groups: just_created, siwappall, siwapphaproxydb
+    loop: "{{ec2.instances}}"
+    loop_control: 
+      label: "Instance {{item.id}} at {{item.public_ip}}"
+
+  # Launch the app server instances with the following parameters.
+  - name: Launch application server instances
+    ec2:
+      region: "{{region}}"
+      key_name: "{{key_name}}"
+      group: "{{security_group}}"
+      instance_type: "{{instance_type}}"
+      image: "{{image}}"
+      # Must wait to add public IP to the host group
+      wait: True
+      exact_count: "{{app_count}}"
+      count_tag:
+        Class: application
+        Application: "{{application_name}}"
+        Pod: "{{pod_number}}"
+      instance_tags:
+        Name: siwapp-app
+        Class: application
+        Application: "{{application_name}}"
+        Pod: "{{pod_number}}"
+    register: ec2
+
+  # Put the application servers into a host group
+  - name: Add application instances to host inventory group
+    add_host: 
+      hostname: "{{item.public_ip}}"
+      groups: just_created, siwappall, siwappapplication
+    loop: "{{ec2.instances}}"
+    loop_control: 
+      label: "Instance {{item.id}} at {{item.public_ip}}"
+
+  # Launch the haproxy-app server instance with the following parameters.
+  - name: Launch application haproxy instance
+    ec2:
+      region: "{{region}}"
+      key_name: "{{key_name}}"
+      group: "{{security_group}}"
+      instance_type: "{{instance_type}}"
+      image: "{{image}}"
+      # Must wait to add public IP to the host group
+      wait: True
+      exact_count: 1
+      count_tag:
+        Class: haproxy-app
+        Application: "{{application_name}}"
+        Pod: "{{pod_number}}"
+      instance_tags:
+        Name: siwapp-haproxy-app
+        Class: haproxy-app
+        Application: "{{application_name}}"
+        Pod: "{{pod_number}}"
+    register: ec2
+
+  # Put the haproxy application servers into a host group
+  - name: Add app haproxy instances to host inventory group
+    add_host: 
+      hostname: "{{item.public_ip}}"
+      groups: just_created, siwappall, siwapphaproxyapp
+    loop: "{{ec2.instances}}"
+    loop_control: 
+      label: "Instance {{item.id}} at {{item.public_ip}}"
+
+  # Launch the load simulator instance with the following parameters.
+  - name: Launch load simulator instance
+    ec2:
+      region: "{{region}}"
+      key_name: "{{key_name}}"
+      group: "{{security_group}}"
+      instance_type: "{{instance_type}}"
+      image: "{{image}}"
+      # Must wait to add public IP to the host group
+      wait: True
+      exact_count: "{{loadsim_count}}"
+      count_tag:
+        Class: loadsim
+        Application: "{{application_name}}"
+        Pod: "{{pod_number}}"
+      instance_tags:
+        Name: siwapp-loadsim
+        Class: loadsim
+        Application: "{{application_name}}"
+        Pod: "{{pod_number}}"
+    register: ec2
+
+  # Put the load simulator servers into a host group
+  - name: Add load simulator instances to host inventory group
+    add_host: 
+      hostname: "{{item.public_ip}}"
+      groups: just_created, siwappall, siwapploadsim
+    loop: "{{ec2.instances}}"
+    loop_control: 
+      label: "Instance {{item.id}} at {{item.public_ip}}"

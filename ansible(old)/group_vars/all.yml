@@ -1,0 +1,39 @@
+---
+
+# VM counts
+db_count: 3
+app_count: 3
+loadsim_count: 1
+
+# VM tagging
+application_name: siwapp
+address_type: static  # [static|dhcp]
+deployment_type: static  # [static|dhcp]
+deployment_environment: vcenter
+pod_number: 1
+
+database_tier_name: siwapp-db
+haproxy_db_tier_name: siwapp-haproxy-db
+application_tier_name: siwapp-app
+haproxy_app_tier_name: siwapp-haproxy-app
+loadsim_tier_name: siwapp-loadsim
+
+database_tier_class: database
+haproxy_db_tier_class: haproxy-db
+application_tier_class: application
+haproxy_app_tier_class: haproxy-app
+loadsim_tier_class: loadsim
+
+app_port: 8081
+
+galera_db_name: siwapp
+galera_db_user: siwapp
+galera_db_user_pwd: siwapp
+galera_db_root_pwd: siwapp
+galera_db_cluster_name: siwapp
+
+tet_sensor_db: False
+tet_sensor_haproxydb: False
+tet_sensor_application: False
+tet_sensor_haproxyapp: False
+tet_sensor_loadsim: False

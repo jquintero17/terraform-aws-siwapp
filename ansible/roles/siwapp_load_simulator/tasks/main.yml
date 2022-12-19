@@ -1,0 +1,50 @@
+- name: upgrade all packages
+  yum:
+    name: '*'
+    state: latest
+
+- name: Install yum packages
+  yum:
+    name: python3-pip, python3-devel, gcc, python3
+    state: latest
+
+- name: Upgrade pip and install virtualenv
+  pip:
+    name: pip, virtualenv
+    state: latest
+  vars:
+    ansible_python_interpreter: /usr/bin/python3
+
+- name: Install pip packages
+  pip:
+    virtualenv: /home/ansible/siwapp
+    virtualenv_command: /usr/local/bin/virtualenv
+    virtualenv_python: python3
+    name: locust, lxml, requests
+    state: latest
+  vars:
+    ansible_python_interpreter: /usr/bin/python3
+
+- name: Copy locust file
+  copy:
+    src: siwapp-locust-file.py
+    dest: /usr/share/systemd/siwapp-locust-file.py
+
+- name: Build locustio service script
+  vars:
+    haproxy_app: "{{groups['vm_tag_app_lb'][0]}}"
+  template:
+    src: siwapp-locust-service.sh
+    dest: /usr/share/systemd/siwapp-locust-service.sh
+
+- name: Copy siwapp simulator service
+  copy:
+    src: siwapp-simulator.service
+    dest: /etc/systemd/system/siwapp-simulator.service
+
+- name: Enable and start the siwapp simulator service
+  systemd:
+    name: siwapp-simulator
+    state: restarted
+    enabled: yes
+    daemon_reload: yes

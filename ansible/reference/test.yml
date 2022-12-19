@@ -1,0 +1,58 @@
+# =========================================================
+#       PLAY -- Create EC2 instances and group them
+# ---------------------------------------------------------
+- name: Stage all instances required for siwapp
+  hosts: localhost
+  connection: local
+  gather_facts: False
+
+  vars:
+      key_name: 'dchosnek m13'
+      instance_type: t2.micro
+      security_group: [default, "SSH only", ICMP]
+      image: ami-6871a115
+      region: us-east-1
+      pod_number: 4
+      db_count: 3
+      app_count: 3
+      loadsim_count: 1
+
+  tasks:
+
+  # Launch the database instances with the following parameters.
+  - name: Launch database instances
+    ec2:
+      region: "{{region}}"
+      key_name: "{{key_name}}"
+      group: "{{security_group}}"
+      instance_type: "{{instance_type}}"
+      image: "{{image}}"
+      # state is not needed when exact_count is used
+      # state: present
+      # Must wait in order to add public IP to the right group
+      wait: True
+      exact_count: "{{db_count}}"
+      count_tag:
+        Class: database
+        Application: siwapp
+        Pod: "{{pod_number}}"
+      # count: "{{db_count}}"
+      instance_tags:
+        Name: siwapp-db
+        Class: database
+        Application: siwapp
+        Pod: "{{pod_number}}"
+    register: ec2
+
+  - debug: var=ec2
+
+  # Put the database servers into a host group
+  - name: Create host group for database instances
+    add_host: 
+      hostname: "{{item.public_ip}}"
+      groups:
+        - just_created
+        - siwappdb
+    loop: "{{ec2.instances}}"
+    loop_control: 
+      label: "Instance {{item.id}} at {{item.public_ip}}"

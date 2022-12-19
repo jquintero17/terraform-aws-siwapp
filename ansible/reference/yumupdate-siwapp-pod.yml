@@ -1,0 +1,68 @@
+---
+# This playbook **YUM UPDATES** EC2 instances for SIWAPP.
+# It REQUIRES instances to have the following tags:
+# - Application: this will be set to 'siwapp' for all instances
+# - Pod: pod_number is defined in the vars section below and is used to allow
+#   creation of multiple pods for a lab environment
+#
+# It is recommended to set the ANSIBLE_FORKS environment variable (or add it to
+# your ansible.cfg) to the number of instances created so that yum updates of
+# all instances can occur in parallel. The ansible default for forks is 5,
+# which is too low. To check if forks has been changed from the default:
+#         ansible-config dump --only-changed
+#
+# Doron Chosnek, Cisco Systems, 2018
+# Brandon Beck, Cisco Systems, 2018
+#
+
+# =========================================================
+#       PLAY -- Perform yum update of all packages
+# ---------------------------------------------------------
+- name: Perform yum update on all siwapp instances in the given pod
+  hosts: localhost
+  connection: local
+  gather_facts: True
+
+  vars:
+      region: us-east-1
+      pod_number: 4
+
+  tasks:
+
+  - name: Gather facts about all EC2 instances for siwapp in the given pod
+    ec2_instance_facts:
+      region: "{{region}}"
+      filters:
+        "tag:Application": siwapp
+        "tag:Pod": "4"
+    register: ec2
+
+  - debug: var=ec2
+
+  - name: Create host group for all instances
+    add_host:
+      hostname: "{{ item.public_ip_address }}"
+      groups: siwappall
+    loop: "{{ec2.instances}}"
+    loop_control: 
+      label: "Examining instance {{item.instance_id}}"
+    when: item.state.name == "running"
+
+
+# =========================================================
+#       PLAY -- perform actions on all new instances
+# ---------------------------------------------------------
+
+- name: Perform actions on all new instances (group=just_created)
+  hosts: siwappall
+  remote_user: ec2-user
+  become: yes
+  become_method: sudo
+  gather_facts: False
+
+  tasks:
+
+  - name: Perform yum update for all packages
+    yum:
+      name: '*'
+      state: latest

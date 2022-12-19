@@ -1,0 +1,202 @@
+- name: Create 'wheel' user group
+  group:
+    name: wheel
+    state: present
+
+- name: Allow 'wheel' group to have passwordless sudo
+  lineinfile:
+    dest: /etc/sudoers
+    state: present
+    regexp: '^%wheel'
+    line: '%wheel ALL=(ALL) NOPASSWD: ALL'
+    validate: 'visudo -cf %s'
+
+- name: Add sudoers users to wheel group
+  user: name=siwapp groups=wheel append=yes state=present createhome=yes
+
+- name: Add mariadb yum repo
+  yum_repository:
+    name: MariaDB
+    baseurl: http://yum.mariadb.org/10.1/centos7-amd64
+    gpgkey: https://yum.mariadb.org/RPM-GPG-KEY-MariaDB
+    gpgcheck: yes
+    description: mariadb
+    state: present
+
+- name: Import mariadb gpg key
+  rpm_key:
+    state: present
+    key: https://yum.mariadb.org/RPM-GPG-KEY-MariaDB
+    validate_certs: no
+
+- name: Create local hosts file
+  template:
+    src: hosts
+    dest: /etc/hosts
+
+- name: Install EPEL release
+  yum:
+    name:
+    - https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
+    - libselinux-python
+    state: latest
+
+#- name: EPEL
+# command: sudo dnf install https://dl.fedoraproject.org/pub/epel/epel-release-latest-8.noarch.rpm -y
+
+
+- name: Turn off SELinux
+  selinux:
+    state: disabled
+
+# - name: Perform yum update for all packages
+#   yum:
+#     name: '*'
+#     state: latest
+
+
+- name: Disable firewalld
+  systemd:
+    name: firewalld
+    state: stopped
+    enabled: no
+  ignore_errors: yes
+
+- name: Create mysql group
+  group:
+    name: mysql
+    gid: 250
+    system: yes
+    state: present
+
+- name: Create mysql user and add to mysql group
+  user:
+    name: mysql
+    uid: 250
+    system: yes
+    group: mysql
+    state: present
+
+#- name: Install yum packages
+#  yum:
+#      name: python3-PyMySQL, mariadb-server, mariadb, galera, less, which, socat, pwgen, nmap, wget
+#      state: latest
+
+- name: Install yum packages
+  yum:
+      name: MariaDB-server, MariaDB-client, galera, less, which, socat, pwgen, nmap, wget, MySQL-python
+      state: latest
+
+- name: Enable and start the mariadb service
+  systemd:
+    name: mariadb
+    state: started
+    enabled: yes
+    daemon_reload: yes
+  ignore_errors: yes
+
+- name: update mysql root password for all root accounts
+  mysql_user: 
+    name: root
+    host: "{{ item }}"
+    password: "{{ galera_db_root_pwd }}"
+    check_implicit_admin: yes
+    login_user: root
+    login_password: "{{ galera_db_root_pwd }}"
+    state: present
+  with_items:
+    - "{{ ansible_hostname }}"
+    - 127.0.0.1
+    - ::1
+    - localhost
+
+- name: Remove the test database
+  mysql_db:
+    name: test
+    state: absent
+    login_user: root
+    login_password: "{{ galera_db_root_pwd }}"
+
+- name: Add user siwapp to MariaDB
+  mysql_user:
+    name: "{{ galera_db_user }}"
+    password: "{{ galera_db_user_pwd }}"
+    login_user: root
+    login_password: "{{ galera_db_root_pwd }}"
+    host: "%"
+    priv: '*.*:ALL'
+    state: present
+
+- name: Stop the mariadb service
+  systemd:
+    name: mariadb
+    state: stopped
+    enabled: yes
+
+- name: Create server.cnf file on all hosts
+  vars:
+    databases: "{{groups['db']}}"
+    leadip: "{% for host in groups['db'] %}{% if hostvars[host]['tags']['cluster_lead']=='true' %}{{ hostvars[host]['ansible_priv_ip']}}{% endif %}{% endfor %}"
+    leadname: "{% for host in groups['db'] %}{% if hostvars[host]['tags']['cluster_lead']=='true' %}{{ hostvars[host]['private_dns_name']}}{% endif %}{% endfor %}"
+  template:
+    src: server.cnf
+    dest: /etc/my.cnf.d/server.cnf
+
+- name: Create new galera cluster on master node
+  command: galera_new_cluster
+  when: hostvars[inventory_hostname]['tags']['cluster_lead']=='true'
+
+- name: Copy sql dump to master node
+  copy:
+    src: siwapp.sql
+    dest: /tmp/siwapp.sql
+  when: hostvars[inventory_hostname]['tags']['cluster_lead']=='true'
+
+- name: Import sql dump for siwapp on master node
+  mysql_db:
+    login_user: root
+    login_password: "{{ galera_db_root_pwd }}"
+    state: import
+    name: all
+    target: /tmp/{{ galera_db_name }}.sql
+  when: hostvars[inventory_hostname]['tags']['cluster_lead']=='true'
+
+- name: Add user haproxy to MariaDB with ro privs
+  mysql_user:
+    name: "haproxy"
+    host: '%'
+    login_user: root
+    login_password: "{{ galera_db_root_pwd }}"
+    state: present
+  when: hostvars[inventory_hostname]['tags']['cluster_lead']=='true'
+
+- name: Enable and start the mariadb service
+  systemd:
+    name: mariadb
+    state: started
+    enabled: yes
+  when: hostvars[inventory_hostname]['tags']['cluster_lead']!='true'
+
+- name: Create siwapp fixup script directory if it doesn't exist
+  file:
+    path: /usr/share/systemd/siwapp
+    state: directory
+    mode: 0755
+
+- name: Create galera fixup script on all hosts
+  vars:
+    databases: "{{db}}"
+  template:
+    src: siwapp-galera-fixup.sh
+    dest: /usr/share/systemd/siwapp/siwapp-galera-fixup.sh
+
+- name: Create systemd extension override directory
+  file:
+    path: /usr/lib/systemd/system/mariadb.service.d
+    state: directory
+    mode: 0755
+
+- name: Copy siwapp systemd override file
+  copy:
+    src: 10-siwapp-edits.conf
+    dest: /usr/lib/systemd/system/mariadb.service.d/10-siwapp-edits.conf

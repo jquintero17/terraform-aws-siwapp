@@ -1,53 +1,6 @@
 ---
-- name: Create 'wheel' user group
-  group:
-    name: wheel
-    state: present
-
-- name: Allow 'wheel' group to have passwordless sudo
-  lineinfile:
-    dest: /etc/sudoers
-    state: present
-    regexp: '^%wheel'
-    line: '%wheel ALL=(ALL) NOPASSWD: ALL'
-    validate: 'visudo -cf %s'
-
-- name: Add sudoers users to wheel group
-  user: name=siwapp groups=wheel append=yes state=present createhome=yes
 
 # Tasks for configuring the application instances
-- name: Create local hosts file
-  template:
-    src: hosts
-    dest: /etc/hosts
-
-- name: Install EPEL release
-  yum:
-    name:
-    - https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
-    - libselinux-python
-    state: latest
-
-#- name: EPEL
-# command: sudo dnf install https://dl.fedoraproject.org/pub/epel/epel-release-latest-8.noarch.rpm -y
-
-
-- name: Turn off SELinux
-  selinux:
-    state: disabled
-
-# - name: Perform yum update for all packages
-#   yum:
-#     name: '*'
-#     state: latest
-
-
-- name: Disable firewalld
-  systemd:
-    name: firewalld
-    state: stopped
-    enabled: no
-  ignore_errors: yes
 
 - name: Install packages with yum
   yum:
@@ -102,6 +55,8 @@
     dest: /var/www/html/apps/siwapp/templates/layout.php
 
 - name: Create modified databases.yml file
+  vars:
+    databaselb: "{{groups['vm_tag_db_lb'][0]}}"
   template:
     src: databases.yml
     dest: /var/www/html/config/databases.yml

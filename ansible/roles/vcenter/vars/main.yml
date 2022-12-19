@@ -1,0 +1,24 @@
+---
+# vcenter deployment vars
+vcenter: vcenter-prod.securemobility.net
+vcenter_username: jlunde@securemobility.net
+vcenter_password: [changeMe]
+naming_prefix: prod-
+
+# Only set if using deployment_type = 'static'
+address_dns_servers:
+- 172.16.210.70
+- 172.16.210.71
+- 8.8.8.8
+address_search_domain: securemobility.net
+
+datacenter: SMLab RCDN
+cluster: SMLabTet
+folder: Tetration Hosts
+template: cent7
+datastore: MGMT-SRV05DS1
+app_network: Tetration Vl37 (172.16.237.X)
+db_network: Tetration Vl37 (172.16.237.X)
+haproxy_app_network: Tetration Vl37 (172.16.237.X)
+haproxy_db_network: Tetration Vl37 (172.16.237.X)
+loadsim_network: Tetration Vl38 (172.16.238.X)

@@ -1,26 +1,51 @@
 ---
 
-# # =========================================================
-# #       PLAY -- Read in global variables
-# # ---------------------------------------------------------
+# =========================================================
+#       PLAY -- Wait for machines to be available
+# ---------------------------------------------------------
 
-- name: Include deployment information
+# ensure all VMs are accessible before proceding with the rest
+# of the configuration
+- name: Pause for instances to be ready for configuration
   hosts: all
+  # remote_user: "{{ remote_user if deployment_environment == 'aws' else ansible_user }}"
+  remote_user: root
+  become: no
+  gather_facts: no
+
+# =========================================================
+#       PLAY -- Perform actions on all instances
+# ---------------------------------------------------------
+- name: Perform actions on all instances
+  hosts: all
+  # remote_user: "{{ remote_user if deployment_environment == 'aws' else ansible_user }}"
+  remote_user: root
+  become: yes
+  become_method: sudo
   gather_facts: True
 
+  pre_tasks:
+  - name: Pause for all instances to be ready for configuration
+    wait_for_connection:
+      sleep: 5
+      timeout: 300
+
   tasks:
-    - name: Display all variables/facts known for a host
-      debug:
-        var: hostvars[inventory_hostname]
-      tags: debug_info
+  - name: include local_user role
+    include_role:
+      name: local_user
+
+  - name: include common
+    include_role:
+      name: common
 
 # =========================================================
 #       PLAY -- Configure database tier
 # ---------------------------------------------------------
 
-- name: Configure instances in application tier
-  hosts: all
-  remote_user: centos
+- name: Configure instances in database tier
+  hosts: vm_tag_db
+  remote_user: root
   become: yes
   become_method: sudo
   gather_facts: True
@@ -32,5 +57,110 @@
       timeout: 300
     
   roles:
+  - siwapp_db
+
+# =========================================================
+#       PLAY -- Configure HA proxy for the database tier
+# ---------------------------------------------------------
+
+- name: Configure instances in haproxy for database tier
+  hosts: vm_tag_db_lb
+  remote_user: root
+  become: yes
+  become_method: sudo
+  gather_facts: False
+
+  pre_tasks:
+  - name: Pause for all instances to be ready for configuration
+    wait_for_connection:
+      sleep: 5
+      timeout: 300
+
+  roles:
+  - siwapp_haproxy_db
+
+# =========================================================
+#       PLAY -- Configure application tier
+# ---------------------------------------------------------
+
+- name: Configure instances in application tier
+  hosts: vm_tag_app
+  remote_user: root
+  become: yes
+  become_method: sudo
+  # need to gather facts for this play so we can pass
+  # hostname into one of the role tasks
+  gather_facts: True
+  
+  pre_tasks:
+  - name: Pause for all instances to be ready for configuration
+    wait_for_connection:
+      sleep: 5
+      timeout: 300
+
+  roles:
   - siwapp_app
-  - tet-sensor
+
+# =========================================================
+#       PLAY -- Configure HA proxy for the application tier
+# ---------------------------------------------------------
+
+- name: Configure instances in haproxy for application tier
+  hosts: vm_tag_app_lb
+  remote_user: root
+  become: yes
+  become_method: sudo
+  gather_facts: False
+
+  pre_tasks:
+  - name: Pause for all instances to be ready for configuration
+    wait_for_connection:
+      sleep: 5
+      timeout: 300
+
+  roles:
+  - siwapp_haproxy_app
+
+# =========================================================
+#       OLD LOADSIM - WE CENTRALIZED THIS FUNCTION
+# ---------------------------------------------------------
+
+#- name: Configure instances for LoadSIM
+#  hosts: vm_tag_loadsim
+#  remote_user: root
+#  become: yes
+#  become_method: sudo
+#  gather_facts: False
+#
+#  pre_tasks:
+#  - name: Pause for all instances to be ready for configuration
+#    wait_for_connection:
+#      sleep: 5
+#      timeout: 300
+#
+#  roles:
+#  - siwapp_load_simulator
+
+# =========================================================
+#       PLAY -- DEPLOY TETRATION SENSORS and change root password
+# ---------------------------------------------------------
+
+- name: Perform actions on all instances
+  hosts: all
+  # remote_user: "{{ remote_user if deployment_environment == 'aws' else ansible_user }}"
+  remote_user: root
+  become: yes
+  become_method: sudo
+  gather_facts: True
+
+  tasks:
+  - name: include TETRATION-SENSOR ROLE
+    include_role:
+      name: tetration_sensor
+    when: "'DontDoDrugs' not in activation_key"
+
+  - name: Change root password
+    user:
+      name: root
+      update_password: always
+      password: "{{ cco_pass | password_hash('sha512')  }}"

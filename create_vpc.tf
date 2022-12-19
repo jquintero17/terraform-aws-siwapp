@@ -7,6 +7,6 @@ resource "aws_vpc" "vpc" {
  
   tags = {
     "Owner" = var.owner
-    "Name"  = "terraform-vpc"
+    "Name"  = "siwapp-vpc"
   }
 }

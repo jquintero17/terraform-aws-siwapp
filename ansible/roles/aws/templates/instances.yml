@@ -1,0 +1,26 @@
+siwapp_deployment:
+  loadsim:
+{% for vm in ec2load.tagged_instances %}
+    - name: {{vm.private_dns_name}}
+      ip: {{vm.private_ip}}
+{% endfor %}
+  haproxy_app:
+{% for vm in ec2appha.tagged_instances %}
+    - name: {{vm.private_dns_name}}
+      ip: {{vm.private_ip}}
+{% endfor %}
+  app:
+{% for vm in ec2app.tagged_instances %}
+    - name: {{vm.private_dns_name}}
+      ip: {{vm.private_ip}}
+{% endfor %}
+  haproxy_db:
+{% for vm in ec2dbha.tagged_instances %}
+    - name: {{vm.private_dns_name}}
+      ip: {{vm.private_ip}}
+{% endfor %}
+  db:
+{% for vm in ec2db.tagged_instances %}
+    - name: {{vm.private_dns_name}}
+      ip: {{vm.private_ip}}
+{% endfor %}

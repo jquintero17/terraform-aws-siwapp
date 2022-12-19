@@ -1,0 +1,37 @@
+---
+
+# =========================================================
+#       PLAY -- Create global host groups
+# ---------------------------------------------------------
+- name: Collect facts about EC2 instances to create groups
+  hosts: localhost
+  connection: local
+  gather_facts: True
+
+  vars:
+      region: us-east-1
+
+  tasks:
+
+  - name: Gather facts about all EC2 instances for given region
+    ec2_instance_facts:
+      region: "{{region}}"
+    register: ec2
+
+  # - debug: var=ec2
+
+  - name: Apply tags
+    ec2_tag:
+      region: "{{region}}"
+      resource: "{{item.instance_id}}"
+      state: present
+      tags:
+        DataClassification: Cisco Public
+        Environment: NonProd
+        DataTaxonomy: Telemetry Data
+        ApplicationName: TetrationTSA
+        CiscoMailAlias: dchosnek@cisco.com
+        ResourceOwner: Doron Chosnek
+    loop: "{{ec2.instances}}"
+    loop_control: 
+      label: "Tagging {{item.instance_id}}"

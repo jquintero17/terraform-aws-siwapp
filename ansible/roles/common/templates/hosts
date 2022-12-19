@@ -1,0 +1,13 @@
+127.0.0.1   {{ ansible_hostname }}
+{% for vm in groups['vm_tag_app_lb'] %}
+{{ hostvars[vm]['ansible_host'] }}     {{ hostvars[vm]['config']['name'] }}
+{% endfor %}
+{% for vm in groups['vm_tag_app'] %}
+{{ hostvars[vm]['ansible_host'] }}     {{ hostvars[vm]['config']['name'] }}
+{% endfor %}
+{% for vm in groups['vm_tag_db'] %}
+{{ hostvars[vm]['ansible_host'] }}     {{ hostvars[vm]['config']['name'] }}
+{% endfor %}
+{% for vm in groups['vm_tag_db_lb'] %}
+{{ hostvars[vm]['ansible_host'] }}     {{ hostvars[vm]['config']['name'] }}
+{% endfor %}

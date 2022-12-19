@@ -1,6 +1,6 @@
 #!/bin/bash -x
 
-if [ "{{ databases[0].name }}" == "${HOSTNAME}" ]; then
+if [ "{% for host in databases %}{% if hostvars[host]['tag_category.isPrimary'] is defined %}{{hostvars[host]['ansible_hostname']}}{% endif %}{% endfor %}" == "${HOSTNAME}" ]; then
     sed -i "s/safe_to_bootstrap.*/safe_to_bootstrap: 1/" /var/lib/mysql/grastate.dat
     systemctl set-environment _WSREP_NEW_CLUSTER='--wsrep-new-cluster'
 
@@ -12,7 +12,7 @@ else
     ERR=0
 
     # Keep checking for port 3306 on the master to be open
-    until $(mysql -h {{ databases[0].name }} -u {{ galera_db_user }} -p"{{ galera_db_user_pwd }}" -e ""); do
+    until $(mysql -h {% for host in databases %}{% if hostvars[host]['tag_category.isPrimary'] is defined %}{{hostvars[host]['ansible_hostname']}}{% endif %}{% endfor %} -u {{ galera_db_user }} -p"{{ galera_db_user_pwd }}" -e ""); do
       sleep ${SLEEP_TIME}
       let "COUNT++"
       echo ${COUNT}

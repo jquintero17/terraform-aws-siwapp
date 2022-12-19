@@ -1,0 +1,43 @@
+---
+# This playbook removes EC2 instances for a given SIWAPP pod.
+# It will only affect instances with the following tags:
+# - Application: siwapp
+# - Pod: pod_number is defined in the vars section below and is used to allow
+# 
+# An instance may have other tags defined, but they will be ignored.
+#
+# Doron Chosnek, Cisco Systems, 2018
+#
+
+# =========================================================
+#       PLAY
+# ---------------------------------------------------------
+- name: Remove all instances for pod {{pod_number}}
+  hosts: localhost
+  connection: local
+  gather_facts: False
+
+  vars:
+      image: ami-6871a116
+      region: us-east-1
+      pod_number: 4
+
+  tasks:
+
+  - name: Set instance count to zero for pod {{pod_number}}
+    ec2:
+      image: "{{image}}"
+      wait: False
+      exact_count: 0
+      region: "{{region}}"
+      count_tag:
+        Application: siwapp
+        Pod: "{{pod_number}}"
+    register: ec2
+
+  - name: List hosts removed for pod {{pod_number}}
+    debug:
+      msg: Removed {{item.public_ip}}
+    loop: "{{ec2.instances}}"
+    loop_control:
+      label: Remove instance with ID {{item.id}}

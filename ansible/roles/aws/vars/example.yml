@@ -1,0 +1,26 @@
+---
+# variables for AWS deployment
+
+# AWS region expressed like us-east-1 or eu-west-2
+# https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/Concepts.RegionsAndAvailabilityZones.html
+region: us-east-1
+
+# name of the SSH key with which to deploy the instances
+key_name: 'my SSH key name'
+
+# instance type; t2.micro is the only type that has been tested
+instance_type: t2.micro
+
+# AMI (EC2 image ID) to use; only RedHat 7.x has been tested successfully;
+# the AWS Linux AMIs definitely fail; keep in mind that image IDs change from
+# one region to the next
+# RHEL 7.5
+# image: ami-6871a115
+# RHEL 7.6
+image: ami-011b3ccf1bd6db744
+
+# names of security groups to be applied to all instances except web tier
+security_group: [group_one, group_two]
+
+# names of security groups to be applied to the web tier (haproxy-app)
+web_security_group: [group_one, group_two, Web]

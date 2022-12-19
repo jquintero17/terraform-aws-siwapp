@@ -1,0 +1,24 @@
+---
+
+# - name: Pause for {{haproxy_db_tier_class}} instances to be ready
+#   wait_for_connection:
+#     sleep: 5
+#     timeout: 300
+
+- name: Install haproxy package
+  yum:
+    name: haproxy
+    state: present
+
+- name: Create haproxy.cfg file on host
+  vars:
+    databases: "{{groups['vm_tag_db']}}"
+  template:
+    src: haproxy.cfg
+    dest: /etc/haproxy/haproxy.cfg
+
+- name: Start the haproxy service
+  systemd:
+    name: haproxy
+    state: started
+    enabled: yes

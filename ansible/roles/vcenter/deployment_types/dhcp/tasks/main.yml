@@ -1,0 +1,275 @@
+- name: Launch DB Instances
+  vmware_guest:
+    hostname: "{{ vcenter }}"
+    username: "{{ vcenter_username }}"
+    password: "{{ vcenter_password }}"
+    validate_certs: False
+    datacenter: "{{ datacenter }}"
+    folder: "{{ folder }}"
+    name: "{{ naming_prefix }}siwapp-db-{{ item }}"
+    state: poweredon
+    guest_id: centos64Guest
+    hardware:
+        memory_mb: 4096
+        num_cpus: 2
+    template: "{{ template }}"
+    networks:
+    - name: "{{ db_network }}"
+    wait_for_ip_address: yes 
+  with_sequence: start=1 end={{ db_count }}
+  loop_control:
+    label: "Deploying vm: {{ naming_prefix }}siwapp-db-{{ item }}"
+  register: db_vms
+
+- name: Add custom attributes to DB hosts
+  vmware_guest_custom_attributes:
+    hostname: "{{ vcenter }}"
+    username: "{{ vcenter_username }}"
+    password: "{{ vcenter_password }}"
+    validate_certs: False
+    datacenter: "{{ datacenter }}"
+    folder: "{{ folder }}"
+    name: "{{ item.instance.hw_name }}"
+    attributes:
+      - name : 'Function'
+        value: "{{database_tier_name}}"
+      - name: 'Class'
+        value: "{{ database_tier_class }}"
+      - name: 'Application'
+        value: "{{application_name}}"
+      - name: 'Pod'
+        value: "{{pod_number}}"
+  loop: "{{ db_vms.results }}"
+  loop_control:
+    label: "Adding custom attributes to {{ item.instance.hw_name }}"
+
+- name: Add all database instances to host inventory group
+  add_host: 
+    hostname: "{{ item.instance.hw_eth0.ipaddresses[0] }}"
+    groups: siwappall, siwappdatabase
+  loop: "{{ db_vms.results }}"
+  loop_control:
+    label: "Adding host: {{ item.instance.hw_eth0.ipaddresses[0] }} to groups: siwappall, siwappdatabase"
+
+- name: Launch DB HAProxy Instances
+  vmware_guest:
+    hostname: "{{ vcenter }}"
+    username: "{{ vcenter_username }}"
+    password: "{{ vcenter_password }}"
+    validate_certs: False
+    datacenter: "{{ datacenter }}"
+    folder: "{{ folder }}"
+    name: "{{ naming_prefix }}siwapp-haproxy-db-{{ item }}"
+    state: poweredon
+    guest_id: centos64Guest
+    hardware:
+        memory_mb: 4096
+        num_cpus: 2
+    template: "{{ template }}"
+    networks:
+    - name: "{{ haproxy_db_network }}"
+    wait_for_ip_address: yes 
+  with_sequence: start=1 end=1
+  loop_control:
+    label: "Deploying vm: {{ naming_prefix }}siwapp-haproxy-db-{{ item }}"
+  register: haproxy_db_vms
+
+- name: Add custom attributes to HAProxy DB hosts
+  vmware_guest_custom_attributes:
+    hostname: "{{ vcenter }}"
+    username: "{{ vcenter_username }}"
+    password: "{{ vcenter_password }}"
+    validate_certs: False
+    datacenter: "{{ datacenter }}"
+    folder: "{{ folder }}"
+    name: "{{ item.instance.hw_name }}"
+    attributes:
+      - name : 'Function'
+        value: "{{haproxy_db_tier_name}}"
+      - name: 'Class'
+        value: "{{ haproxy_db_tier_class }}"
+      - name: 'Application'
+        value: "{{application_name}}"
+      - name: 'Pod'
+        value: "{{pod_number}}"
+  loop: "{{ haproxy_db_vms.results }}"
+  loop_control:
+    label: "Adding custom attributes to {{ item.instance.hw_name }}"
+
+- name: Add all database haproxy instances to host inventory group
+  add_host: 
+    hostname: "{{ item.instance.hw_eth0.ipaddresses[0] }}"
+    groups: siwappall, siwapphaproxydb
+  loop: "{{ haproxy_db_vms.results }}"
+  loop_control:
+    label: "Adding host: {{ item.instance.hw_eth0.ipaddresses[0] }} to groups: siwappall, siwapphaproxydb"
+
+- name: Launch App Instances
+  vmware_guest:
+    hostname: "{{ vcenter }}"
+    username: "{{ vcenter_username }}"
+    password: "{{ vcenter_password }}"
+    validate_certs: False
+    datacenter: "{{ datacenter }}"
+    folder: "{{ folder }}"
+    name: "{{ naming_prefix }}siwapp-app-{{ item }}"
+    state: poweredon
+    guest_id: centos64Guest
+    hardware:
+        memory_mb: 4096
+        num_cpus: 2
+    template: "{{ template }}"
+    networks:
+    - name: "{{ app_network }}"
+    wait_for_ip_address: yes 
+  with_sequence: start=1 end={{ app_count }}
+  loop_control:
+    label: "Deploying vm: {{ naming_prefix }}siwapp-app-{{ item }}"
+  register: app_vms
+
+- name: Add custom attributes to App hosts
+  vmware_guest_custom_attributes:
+    hostname: "{{ vcenter }}"
+    username: "{{ vcenter_username }}"
+    password: "{{ vcenter_password }}"
+    validate_certs: False
+    datacenter: "{{ datacenter }}"
+    folder: "{{ folder }}"
+    name: "{{ item.instance.hw_name }}"
+    attributes:
+      - name : 'Function'
+        value: "{{application_tier_name}}"
+      - name: 'Class'
+        value: "{{ application_tier_class }}"
+      - name: 'Application'
+        value: "{{application_name}}"
+      - name: 'Pod'
+        value: "{{pod_number}}"
+  loop: "{{ app_vms.results }}"
+  loop_control:
+    label: "Adding custom attributes to {{ item.instance.hw_name }}"
+
+- name: Add all app instances to host inventory group
+  add_host: 
+    hostname: "{{ item.instance.hw_eth0.ipaddresses[0] }}"
+    groups: siwappall, siwappapplication
+  loop: "{{ app_vms.results }}"
+  loop_control:
+    label: "Adding host: {{ item.instance.hw_eth0.ipaddresses[0] }} to groups: siwappall, siwappapplication"
+
+- name: Launch App HAProxy Instances
+  vmware_guest:
+    hostname: "{{ vcenter }}"
+    username: "{{ vcenter_username }}"
+    password: "{{ vcenter_password }}"
+    validate_certs: False
+    datacenter: "{{ datacenter }}"
+    folder: "{{ folder }}"
+    name: "{{ naming_prefix }}siwapp-haproxy-app-{{ item }}"
+    state: poweredon
+    guest_id: centos64Guest
+    hardware:
+        memory_mb: 4096
+        num_cpus: 2
+    template: "{{ template }}"
+    networks:
+    - name: "{{ haproxy_app_network }}"
+    wait_for_ip_address: yes 
+  with_sequence: start=1 end=1
+  loop_control:
+    label: "Deploying vm: {{ naming_prefix }}siwapp-haproxy-app-{{ item }}"
+  register: haproxy_app_vms
+
+- name: Add custom attributes to HAProxy App hosts
+  vmware_guest_custom_attributes:
+    hostname: "{{ vcenter }}"
+    username: "{{ vcenter_username }}"
+    password: "{{ vcenter_password }}"
+    validate_certs: False
+    datacenter: "{{ datacenter }}"
+    folder: "{{ folder }}"
+    name: "{{ item.instance.hw_name }}"
+    attributes:
+      - name : 'Function'
+        value: "{{haproxy_app_tier_name}}"
+      - name: 'Class'
+        value: "{{ haproxy_app_tier_class }}"
+      - name: 'Application'
+        value: "{{application_name}}"
+      - name: 'Pod'
+        value: "{{pod_number}}"
+  loop: "{{ haproxy_app_vms.results }}"
+  loop_control:
+    label: "Adding custom attributes to {{ item.instance.hw_name }}"
+
+- name: Add all app haproxy instances to host inventory group
+  add_host: 
+    hostname: "{{ item.instance.hw_eth0.ipaddresses[0] }}"
+    groups: siwappall, siwapphaproxyapp
+  loop: "{{ haproxy_app_vms.results }}"
+  loop_control:
+    label: "Adding host: {{ item.instance.hw_eth0.ipaddresses[0] }} to groups: siwappall, siwapphaproxyapp"
+
+- name: Launch Load Sim Instances
+  vmware_guest:
+    hostname: "{{ vcenter }}"
+    username: "{{ vcenter_username }}"
+    password: "{{ vcenter_password }}"
+    validate_certs: False
+    datacenter: "{{ datacenter }}"
+    folder: "{{ folder }}"
+    name: "{{ naming_prefix }}siwapp-load-simulator-{{ item }}"
+    state: poweredon
+    guest_id: centos64Guest
+    hardware:
+        memory_mb: 4096
+        num_cpus: 2
+    template: "{{ template }}"
+    networks:
+    - name: "{{ loadsim_network }}"
+    wait_for_ip_address: yes 
+  with_sequence: start=1 end=1
+  loop_control:
+    label: "Deploying vm: {{ naming_prefix }}siwapp-load-simulator-{{ item }}"
+  register: loadsim_vms
+
+- name: Add custom attributes to Load Sim hosts
+  vmware_guest_custom_attributes:
+    hostname: "{{ vcenter }}"
+    username: "{{ vcenter_username }}"
+    password: "{{ vcenter_password }}"
+    validate_certs: False
+    datacenter: "{{ datacenter }}"
+    folder: "{{ folder }}"
+    name: "{{ item.instance.hw_name }}"
+    attributes:
+      - name : 'Function'
+        value: "{{ loadsim_tier_name }}"
+      - name: 'Class'
+        value: "{{ loadsim_tier_class }}"
+      - name: 'Application'
+        value: "{{ application_name }}"
+      - name: 'Pod'
+        value: "{{ pod_number }}"
+  loop: "{{ loadsim_vms.results }}"
+  loop_control:
+    label: "Adding custom attributes to {{ item.instance.hw_name }}"
+
+- name: Add all loadsim instances to host inventory group
+  add_host: 
+    hostname: "{{ item.instance.hw_eth0.ipaddresses[0] }}"
+    groups: siwappall, siwapploadsim
+  loop: "{{ loadsim_vms.results }}"
+  loop_control:
+    label: "Adding host: {{ item.instance.hw_eth0.ipaddresses[0] }} to groups: siwappall, siwapphaproxyloadsim"
+
+- name: Create provisioning variables file
+  vars:
+    db_vms: "{{ db_vms }}"
+    haproxy_app_vms: "{{ haproxy_app_vms }}"
+    app_vms: "{{ app_vms }}"
+    haproxy_db_vms: "{{ haproxy_db_vms }}"
+    loadsim_vms: "{{ loadsim_vms }}"
+  template:
+    src: instances.yml
+    dest: deployment.yml

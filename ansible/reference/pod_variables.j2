@@ -1,0 +1,15 @@
+#!/bin/sh
+{% for vm in instances if vm.tags.Class == 'haproxy-app' %}
+HAPROXY_APP_IP="{{vm.private_ip_address}}"
+{% endfor %}
+{% for vm in instances if vm.tags.Class == 'haproxy-db' %}
+HAPROXY_DB_IP="{{vm.private_ip_address}}"
+{% endfor %}
+APP_TIER_HOSTNAMES="{{ appinstances|join(',', attribute='private_dns_name') }}"
+APP_PORT="8081"
+DB_TIER_IPS="{{ dbinstances|join(',', attribute='private_ip_address') }}"
+DB_TIER_HOSTNAMES="{{ dbinstances|join(',', attribute='private_dns_name') }}"
+GALERA_DB_USER="siwapp"
+GALERA_DB_USER_PWD="siwapp"
+GALERA_DB_ROOT_PWD="siwapp"
+GALERA_CLUSTER_NAME="siwapp"

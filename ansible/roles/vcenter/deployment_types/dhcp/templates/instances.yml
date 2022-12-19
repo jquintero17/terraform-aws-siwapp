@@ -1,0 +1,26 @@
+siwapp_deployment:
+  loadsim:
+{% for vm in loadsim_vms.results %}
+    - name: {{vm.instance.hw_name}}
+      ip: {{vm.instance.hw_eth0.ipaddresses[0]}}
+{% endfor %}
+  haproxy_app:
+{% for vm in haproxy_app_vms.results %}
+    - name: {{vm.instance.hw_name}}
+      ip: {{vm.instance.hw_eth0.ipaddresses[0]}}
+{% endfor %}
+  app:
+{% for vm in app_vms.results %}
+    - name: {{vm.instance.hw_name}}
+      ip: {{vm.instance.hw_eth0.ipaddresses[0]}}
+{% endfor %}
+  haproxy_db:
+{% for vm in haproxy_db_vms.results %}
+    - name: {{vm.instance.hw_name}}
+      ip: {{vm.instance.hw_eth0.ipaddresses[0]}}
+{% endfor %}
+  db:
+{% for vm in db_vms.results %}
+    - name: {{vm.instance.hw_name}}
+      ip: {{vm.instance.hw_eth0.ipaddresses[0]}}
+{% endfor %}

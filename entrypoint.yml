@@ -1,0 +1,63 @@
+# =========================================================
+#       PLAY -- Deploy SIWAPP to AWS
+# ---------------------------------------------------------
+
+- name: Setup Infra for Deployment
+  hosts: localhost
+
+  tasks:
+  - name: Generate pet name with separator
+    ansible.builtin.set_fact:
+      dir_name: "{{ lookup('password', '/dev/null chars=ascii_lowercase,digits length=8') }}"
+  
+  - name: Create a directory if it does not exist
+    ansible.builtin.file:
+      path: /root/{{ dir_name }}
+      state: directory
+      mode: '0755'
+
+  - name: Create a directory if it does not exist
+    ansible.builtin.file:
+      path: /root/.aws
+      state: directory
+      mode: '0755'
+
+  - name: Using variable input to create aws config file
+    ansible.builtin.template:
+      src: aws_config.j2
+      dest: /root/.aws/config
+
+  - name: Using variable input to create aws credentials file
+    ansible.builtin.template:
+      src: aws_credentials.j2
+      dest: /root/.aws/credentials
+
+  - name: Clone repo to a new working directory
+    ansible.builtin.git:
+      repo: https://github.com/jlunde-cisco/terraform-aws-siwapp.git
+      dest: /root/{{ dir_name }}/repo
+      single_branch: yes
+      version: main
+      accept_hostkey: True
+
+  - name: Using variable input to create terraform template file
+    ansible.builtin.template:
+      src: variables.j2
+      dest: /root/{{ dir_name }}/repo/variables.tf
+
+  - name: Using variable input to create terraform template file
+    ansible.builtin.template:
+      src: terraform.j2
+      dest: /root/{{ dir_name }}/repo/terraform.pem
+
+
+
+#  - name: Move variable file
+#    command: mv /root/{{ dir_name }}/variables.tf /root/{{ dir_name }}/repo/variables.tf
+  
+#  - name: Execute Terraform Module for SIWAPP on AWS
+#    terraform:
+#      project_path: '/root/{{ dir_name }}/repo'
+#      force_init: true
+#      state: present
+#    register: outputs

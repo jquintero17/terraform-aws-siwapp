@@ -6,12 +6,13 @@
 variable "aws_region" {
   description = "AWS region"
   type        = string
-  default     = "us-east-1"
+  default     = "{{ aws_region }}"
 }
  
 variable "owner" {
   description = "Configuration owner"
   type        = string
+  default     = "{{ owner }}
 }
  
 variable "aws_region_az" {
@@ -125,7 +126,7 @@ variable "instance_type" {
 variable "key_pair" {
   description = "SSH Key pair used to connect"
   type        = string
-  default     = "terraform"
+  default     = "{{ key_pair_name }}"
 }
  
 variable "root_device_type" {
@@ -138,4 +139,8 @@ variable "root_device_size" {
   description = "Size of the root block device"
   type        = string
   default     = "50"
+}
+
+data "aws_s3_bucket" "flowlogs" {
+  bucket = "{{ bucket_name }}"
 }

@@ -1,0 +1,36 @@
+---
+
+# # =========================================================
+# #       PLAY -- Read in global variables
+# # ---------------------------------------------------------
+
+- name: Include deployment information
+  hosts: all
+  gather_facts: True
+
+  tasks:
+    - name: Display all variables/facts known for a host
+      debug:
+        var: hostvars[inventory_hostname]
+      tags: debug_info
+
+# =========================================================
+#       PLAY -- Configure database tier
+# ---------------------------------------------------------
+
+- name: Configure instances in application tier
+  hosts: all
+  remote_user: centos
+  become: yes
+  become_method: sudo
+  gather_facts: True
+
+  pre_tasks:
+  - name: Pause for all instances to be ready for configuration
+    wait_for_connection:
+      sleep: 5
+      timeout: 300
+    
+  roles:
+  - siwapp_app
+  - tet-sensor

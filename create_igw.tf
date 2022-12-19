@@ -5,6 +5,6 @@ resource "aws_internet_gateway" "igw" {
  
   tags = {
     "Owner" = var.owner
-    "Name"  = "terraform-igw"
+    "Name"  = "siwapp-igw"
   }
 }

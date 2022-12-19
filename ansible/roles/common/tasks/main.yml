@@ -1,0 +1,32 @@
+
+# =========================================================
+#       Actions to be run on all new instances
+# ---------------------------------------------------------
+
+- name: Install EPEL release
+  yum:
+    name:
+    - https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
+    - libselinux-python
+    state: latest
+
+- name: Turn off SELinux
+  selinux:
+    state: disabled
+
+# - name: Perform yum update for all packages
+#   yum:
+#     name: '*'
+#     state: latest
+
+- name: Create local hosts file
+  template:
+    src: hosts
+    dest: /etc/hosts
+
+- name: Disable firewalld
+  systemd:
+    name: firewalld
+    state: stopped
+    enabled: no
+  ignore_errors: yes

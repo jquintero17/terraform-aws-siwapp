@@ -10,7 +10,7 @@ resource "aws_route_table" "rt" {
  
   tags = {
     "Owner" = var.owner
-    "Name"  = "terraform-rt"
+    "Name"  = "siwapp-rt"
   }
 }
 

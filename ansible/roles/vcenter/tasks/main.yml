@@ -1,0 +1,3 @@
+- name: Add 'static' deployment environment role
+  include_role:
+    name: "roles/vcenter/deployment_types/{{ deployment_type }}"

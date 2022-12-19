@@ -1,0 +1,38 @@
+---
+- name: Remove existing sensor
+  yum:
+    name: tet-sensor-*
+    state: absent
+  become: yes
+  become_method: sudo
+
+- name: Remove installation folder
+  file:
+    state: absent
+    path: /usr/local/tet
+  become: yes
+  become_method: sudo
+
+- name: Download tet-sensor installer script
+  template: 
+    src: sensor.j2
+    dest: /root/sensor.sh
+  become: yes
+  become_method: sudo
+
+- name: Change File Permissions
+  file:
+    path: /root/sensor.sh
+    mode: a+x
+  become: yes
+  become_method: sudo
+
+- name: Install packages with yum
+  yum:
+    name: unzip, sed, dmidecode, openssl, rpm, lsof, ipset, iptables
+    state: present
+
+- name: Run install script
+  shell: "/root/./sensor.sh --skip-pre-check=ipv6"
+  become: yes
+  become_method: sudo
