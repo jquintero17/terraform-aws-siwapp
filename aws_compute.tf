@@ -19,7 +19,7 @@ resource "aws_instance" "dblb" {
     "Owner"               = var.owner
     "Name"                = "siwapp_db_lb"
     "KeepInstanceRunning" = "false"
-    "ansible_group"       = "db_lb"
+    "ansible_group"       = "vm_tag_db_lb"
     "ApplicationName"     = "siwapp"
     "Scope"               = "prod"
   }
@@ -45,7 +45,7 @@ resource "aws_instance" "db1" {
     "Owner"               = var.owner
     "Name"                = "siwapp_db1"
     "KeepInstanceRunning" = "false"
-    "ansible_group"       = "db"
+    "ansible_group"       = "vm_tag_db"
     "ApplicationName"     = "siwapp"
     "Scope"               = "prod"
     "Lead"                = "true"
@@ -72,7 +72,7 @@ resource "aws_instance" "db2" {
     "Owner"               = var.owner
     "Name"                = "siwapp_db2"
     "KeepInstanceRunning" = "false"
-    "ansible_group"       = "db"
+    "ansible_group"       = "vm_tag_db"
     "ApplicationName"     = "siwapp"
     "Scope"               = "prod"
     "Lead"                = "false"
@@ -99,7 +99,7 @@ resource "aws_instance" "db3" {
     "Owner"               = var.owner
     "Name"                = "siwapp_db3"
     "KeepInstanceRunning" = "false"
-    "ansible_group"       = "db"
+    "ansible_group"       = "vm_tag_db"
     "ApplicationName"     = "siwapp"
     "Scope"               = "prod"
     "Lead"                = "false"
@@ -126,7 +126,7 @@ resource "aws_instance" "applb" {
     "Owner"               = var.owner
     "Name"                = "siwapp_app_lb"
     "KeepInstanceRunning" = "false"
-    "ansible_group"	      = "app_lb"
+    "ansible_group"	      = "vm_tag_app_lb"
     "ApplicationName"     = "siwapp"
     "Scope"               = "prod"
   }
@@ -152,7 +152,7 @@ resource "aws_instance" "app1" {
     "Owner"               = var.owner
     "Name"                = "siwapp_app1"
     "KeepInstanceRunning" = "false"
-    "ansible_group"	      = "app"
+    "ansible_group"	      = "vm_tag_app"
     "ApplicationName"     = "siwapp"
     "Scope"               = "prod"
   }
@@ -178,7 +178,7 @@ resource "aws_instance" "app2" {
     "Owner"               = var.owner
     "Name"                = "siwapp_app2"
     "KeepInstanceRunning" = "false"
-    "ansible_group"       = "app"
+    "ansible_group"       = "vm_tag_app"
     "ApplicationName"     = "siwapp"
     "Scope"               = "prod"
   }
@@ -204,7 +204,7 @@ resource "aws_instance" "app3" {
     "Owner"               = var.owner
     "Name"                = "siwapp_app3"
     "KeepInstanceRunning" = "false"
-    "ansible_group"       = "app"
+    "ansible_group"       = "vm_tag_app"
     "ApplicationName"     = "siwapp"
     "Scope"               = "prod"
   }
@@ -218,7 +218,7 @@ resource "aws_instance" "app3" {
       private_key = file(var.pvt_key)
     }
   }
-  provisioner "local-exec" {
-    command = "ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -u centos -i ansible/vars/aws_ec2.yml --private-key ${var.pvt_key} ansible/site.yml"
-  }
+  #provisioner "local-exec" {
+  #  command = "ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -u centos -i ansible/vars/aws_ec2.yml --private-key ${var.pvt_key} ansible/site.yml"
+  #}
 }

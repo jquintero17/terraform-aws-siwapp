@@ -1,6 +1,5 @@
 ---
-ansible_user : root
-ansible_password: C1sco12345!
+ansible_user : centos
 
 # VM counts
 db_count: 3
