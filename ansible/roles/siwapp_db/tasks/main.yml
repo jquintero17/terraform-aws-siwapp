@@ -91,64 +91,64 @@
 - name: debug lead tag
   ansible.builtin.debug:
     msg: System {{ inventory_hostname }} is the lead {{ private_dns_name }}
-  when: hostvars[inventory_hostname]['tags.Lead'] == 'true'
+  when: hostvars[inventory_hostname]['tags']['Lead'] == 'true'
 
-#- name: Create new galera cluster on master node
-#  command: galera_new_cluster
-#  when: hostvars[inventory_hostname]['tags.Lead'] == 'true'
-#
-#- name: Copy sql dump to master node
-#  copy:
-#    src: siwapp.sql
-#    dest: /tmp/siwapp.sql
-#  when: hostvars[inventory_hostname]['tag_category.isPrimary'] is defined
-#
-#- name: Import sql dump for siwapp on master node
-#  mysql_db:
-#    login_user: root
-#    login_password: "{{ galera_db_root_pwd }}"
-#    state: import
-#    name: all
-#    target: /tmp/{{ galera_db_name }}.sql
-#  when: hostvars[inventory_hostname]['tag_category.isPrimary'] is defined
-#
-#- name: Add user haproxy to MariaDB with ro privs
-#  mysql_user:
-#    name: "haproxy"
-#    host: '%'
-#    login_user: root
-#    login_password: "{{ galera_db_root_pwd }}"
-#    state: present
-#  when: hostvars[inventory_hostname]['tag_category.isPrimary'] is defined
-#
-#- name: Enable and start the mariadb service
-#  systemd:
-#    name: mariadb
-#    state: started
-#    enabled: yes
-#  when: hostvars[inventory_hostname]['tag_category.isPrimary'] is not defined
-#
-#
-#- name: Create siwapp fixup script directory if it doesn't exist
-#  file:
-#    path: /usr/share/systemd/siwapp
-#    state: directory
-#    mode: 0755
-#
-#- name: Create galera fixup script on all hosts
-#  vars:
-#    databases: "{{groups['vm_tag_db']}}"
-#  template:
-#    src: siwapp-galera-fixup.sh
-#    dest: /usr/share/systemd/siwapp/siwapp-galera-fixup.sh
-#
-#- name: Create systemd extension override directory
-#  file:
-#    path: /usr/lib/systemd/system/mariadb.service.d
-#    state: directory
-#    mode: 0755
-#
-#- name: Copy siwapp systemd override file
-#  copy:
-#    src: 10-siwapp-edits.conf
-#    dest: /usr/lib/systemd/system/mariadb.service.d/10-siwapp-edits.conf
+- name: Create new galera cluster on master node
+  command: galera_new_cluster
+  when: hostvars[inventory_hostname]['tags']['Lead'] == 'true'
+
+- name: Copy sql dump to master node
+  copy:
+    src: siwapp.sql
+    dest: /tmp/siwapp.sql
+  when: hostvars[inventory_hostname]['tags']['Lead'] == 'true'
+
+- name: Import sql dump for siwapp on master node
+  mysql_db:
+    login_user: root
+    login_password: "{{ galera_db_root_pwd }}"
+    state: import
+    name: all
+    target: /tmp/{{ galera_db_name }}.sql
+  when: hostvars[inventory_hostname]['tags']['Lead'] == 'true'
+
+- name: Add user haproxy to MariaDB with ro privs
+  mysql_user:
+    name: "haproxy"
+    host: '%'
+    login_user: root
+    login_password: "{{ galera_db_root_pwd }}"
+    state: present
+  when: hostvars[inventory_hostname]['tags']['Lead'] == 'true'
+
+- name: Enable and start the mariadb service
+  systemd:
+    name: mariadb
+    state: started
+    enabled: yes
+  when: hostvars[inventory_hostname]['tags']['Lead'] == 'false'
+
+
+- name: Create siwapp fixup script directory if it doesn't exist
+  file:
+    path: /usr/share/systemd/siwapp
+    state: directory
+    mode: 0755
+
+- name: Create galera fixup script on all hosts
+  vars:
+    databases: "{{groups['vm_tag_db']}}"
+  template:
+    src: siwapp-galera-fixup.sh
+    dest: /usr/share/systemd/siwapp/siwapp-galera-fixup.sh
+
+- name: Create systemd extension override directory
+  file:
+    path: /usr/lib/systemd/system/mariadb.service.d
+    state: directory
+    mode: 0755
+
+- name: Copy siwapp systemd override file
+  copy:
+    src: 10-siwapp-edits.conf
+    dest: /usr/lib/systemd/system/mariadb.service.d/10-siwapp-edits.conf

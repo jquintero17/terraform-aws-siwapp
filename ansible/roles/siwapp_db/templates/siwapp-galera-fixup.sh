@@ -12,7 +12,7 @@ else
     ERR=0
 
     # Keep checking for port 3306 on the master to be open
-    until $(mysql -h {% for host in databases %}{% if hostvars[host]['tag_category.isPrimary'] is defined %}{{hostvars[host]['ansible_hostname']}}{% endif %}{% endfor %} -u {{ galera_db_user }} -p"{{ galera_db_user_pwd }}" -e ""); do
+    until $(mysql -h {% for host in databases %}{% if hostvars[inventory_hostname]['tags']['Lead'] == 'true' %}{{hostvars[host]['ansible_hostname']}}{% endif %}{% endfor %} -u {{ galera_db_user }} -p"{{ galera_db_user_pwd }}" -e ""); do
       sleep ${SLEEP_TIME}
       let "COUNT++"
       echo ${COUNT}
