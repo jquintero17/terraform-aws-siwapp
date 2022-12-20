@@ -88,7 +88,7 @@
     src: server.cnf
     dest: /etc/my.cnf.d/server.cnf
 
-- name: Create new galera cluster on master node
+- name: debug lead tag
   ansible.builtin.debug:
     msg: System {{ inventory_hostname }} is the lead {{ private_dns_name }}
   when: hostvars[inventory_hostname]['tags.Lead'] == 'true'

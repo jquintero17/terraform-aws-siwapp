@@ -25,26 +25,26 @@
     include_role:
       name: common
 
-## =========================================================
-##       PLAY -- Configure database tier
-## ---------------------------------------------------------
-#
-#- name: Configure instances in database tier
-#  hosts: vm_tag_db
-#  remote_user: root
-#  become: yes
-#  become_method: sudo
-#  gather_facts: True
-#
-#  pre_tasks:
-#  - name: Pause for all instances to be ready for configuration
-#    wait_for_connection:
-#      sleep: 5
-#      timeout: 300
-#    
-#  roles:
-#  - siwapp_db
-#
+# =========================================================
+#       PLAY -- Configure database tier
+# ---------------------------------------------------------
+
+- name: Configure instances in database tier
+  hosts: vm_tag_db
+  remote_user: root
+  become: yes
+  become_method: sudo
+  gather_facts: True
+
+  pre_tasks:
+  - name: Pause for all instances to be ready for configuration
+    wait_for_connection:
+      sleep: 5
+      timeout: 300
+    
+  roles:
+  - siwapp_db
+
 ## =========================================================
 ##       PLAY -- Configure HA proxy for the database tier
 ## ---------------------------------------------------------
