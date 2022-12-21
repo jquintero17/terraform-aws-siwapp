@@ -48,36 +48,14 @@
 # =========================================================
 #       PLAY -- Configure HA proxy for the database tier
 # ---------------------------------------------------------
-
-- name: Configure instances in haproxy for database tier
-  hosts: vm_tag_db_lb
-  remote_user: root
-  become: yes
-  become_method: sudo
-  gather_facts: True
-
-  pre_tasks:
-  - name: Pause for all instances to be ready for configuration
-    wait_for_connection:
-      sleep: 5
-      timeout: 300
-
-  roles:
-  - siwapp_haproxy_db
-
-## =========================================================
-##       PLAY -- Configure application tier
-## ---------------------------------------------------------
 #
-#- name: Configure instances in application tier
-#  hosts: vm_tag_app
+#- name: Configure instances in haproxy for database tier
+#  hosts: vm_tag_db_lb
 #  remote_user: root
 #  become: yes
 #  become_method: sudo
-#  # need to gather facts for this play so we can pass
-#  # hostname into one of the role tasks
 #  gather_facts: True
-#  
+#
 #  pre_tasks:
 #  - name: Pause for all instances to be ready for configuration
 #    wait_for_connection:
@@ -85,8 +63,28 @@
 #      timeout: 300
 #
 #  roles:
-#  - siwapp_app
-#
+#  - siwapp_haproxy_db
+
+# =========================================================
+#       PLAY -- Configure application tier
+# ---------------------------------------------------------
+
+- name: Configure instances in application tier
+  hosts: vm_tag_app
+  remote_user: root
+  become: yes
+  become_method: sudo
+  gather_facts: True
+  
+  pre_tasks:
+  - name: Pause for all instances to be ready for configuration
+    wait_for_connection:
+      sleep: 5
+      timeout: 300
+
+  roles:
+  - siwapp_app
+
 ## =========================================================
 ##       PLAY -- Configure HA proxy for the application tier
 ## ---------------------------------------------------------
