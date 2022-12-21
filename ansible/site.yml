@@ -69,33 +69,13 @@
 #       PLAY -- Configure application tier
 # ---------------------------------------------------------
 
-- name: Configure instances in application tier
-  hosts: vm_tag_app
-  remote_user: root
-  become: yes
-  become_method: sudo
-  gather_facts: True
-  
-  pre_tasks:
-  - name: Pause for all instances to be ready for configuration
-    wait_for_connection:
-      sleep: 5
-      timeout: 300
-
-  roles:
-  - siwapp_app
-
-## =========================================================
-##       PLAY -- Configure HA proxy for the application tier
-## ---------------------------------------------------------
-#
-#- name: Configure instances in haproxy for application tier
-#  hosts: vm_tag_app_lb
+#- name: Configure instances in application tier
+#  hosts: vm_tag_app
 #  remote_user: root
 #  become: yes
 #  become_method: sudo
-#  gather_facts: False
-#
+#  gather_facts: True
+#  
 #  pre_tasks:
 #  - name: Pause for all instances to be ready for configuration
 #    wait_for_connection:
@@ -103,23 +83,24 @@
 #      timeout: 300
 #
 #  roles:
-#  - siwapp_haproxy_app
-#
-## =========================================================
-##       PLAY -- DEPLOY TETRATION SENSORS and change root password
-## ---------------------------------------------------------
-#
-#- name: Perform actions on all instances
-#  hosts: all
-#  # remote_user: "{{ remote_user if deployment_environment == 'aws' else ansible_user }}"
-#  remote_user: root
-#  become: yes
-#  become_method: sudo
-#  gather_facts: True
-#
-#  tasks:
-#  - name: include TETRATION-SENSOR ROLE
-#    include_role:
-#      name: tetration_sensor
-#    when: "'DontDoDrugs' not in activation_key"
-#
+#  - siwapp_app
+
+# =========================================================
+#       PLAY -- Configure HA proxy for the application tier
+# ---------------------------------------------------------
+
+- name: Configure instances in haproxy for application tier
+  hosts: vm_tag_app_lb
+  remote_user: root
+  become: yes
+  become_method: sudo
+  gather_facts: False
+
+  pre_tasks:
+  - name: Pause for all instances to be ready for configuration
+    wait_for_connection:
+      sleep: 5
+      timeout: 300
+
+  roles:
+  - siwapp_haproxy_app
