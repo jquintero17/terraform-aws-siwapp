@@ -1,8 +1,0 @@
----
-- name: Install packages with yum
-  yum:
-    name: unzip, sed, dmidecode, openssl, rpm, lsof, ipset, iptables
-    state: present
-
-- name: Run tetration script on hosts
-  script: templates/tetinstall.sh 

@@ -1,4 +1,0 @@
-127.0.0.1   {{ ansible_hostname }}
-{% for host in groups['db'] %}
-{{ hostvars[host]['ansible_priv_ip'] }}     {{ hostvars[host]['private_dns_name'] }}
-{% endfor %}

@@ -51,14 +51,12 @@
       dest: /root/{{ dir_name }}/repo/terraform.pem
       mode: '400'
 
-
-
 #  - name: Move variable file
 #    command: mv /root/{{ dir_name }}/variables.tf /root/{{ dir_name }}/repo/variables.tf
   
-#  - name: Execute Terraform Module for SIWAPP on AWS
-#    terraform:
-#      project_path: '/root/{{ dir_name }}/repo'
-#      force_init: true
-#      state: present
-#    register: outputs
+  - name: Execute Terraform Module for SIWAPP on AWS
+    terraform:
+      project_path: '/root/{{ dir_name }}/repo'
+      force_init: true
+      state: present
+    register: outputs

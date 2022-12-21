@@ -218,7 +218,7 @@ resource "aws_instance" "app3" {
       private_key = file(var.pvt_key)
     }
   }
-  #provisioner "local-exec" {
-  #  command = "ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -u centos -i ansible/vars/aws_ec2.yml --private-key ${var.pvt_key} ansible/site.yml"
-  #}
+  provisioner "local-exec" {
+    command = "ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -u centos -i ansible/aws_ec2.yml --private-key ${var.pvt_key} ansible/site.yml"
+  }
 }
