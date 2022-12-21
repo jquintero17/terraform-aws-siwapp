@@ -2,88 +2,88 @@
 # =========================================================
 #       PLAY -- Perform actions on all instances
 # ---------------------------------------------------------
-#- name: Perform actions on all instances
-#  hosts: all
-#  # remote_user: "{{ remote_user if deployment_environment == 'aws' else ansible_user }}"
-#  remote_user: root
-#  become: yes
-#  become_method: sudo
-#  gather_facts: True
-#
-#  pre_tasks:
-#  - name: Pause for all instances to be ready for configuration
-#    wait_for_connection:
-#      sleep: 5
-#      timeout: 300
-#
-#  tasks:
-#  - name: include local_user role
-#    include_role:
-#      name: local_user
-#
-#  - name: include common
-#    include_role:
-#      name: common
-#
+- name: Perform actions on all instances
+  hosts: all
+  # remote_user: "{{ remote_user if deployment_environment == 'aws' else ansible_user }}"
+  remote_user: root
+  become: yes
+  become_method: sudo
+  gather_facts: True
+
+  pre_tasks:
+  - name: Pause for all instances to be ready for configuration
+    wait_for_connection:
+      sleep: 5
+      timeout: 300
+
+  tasks:
+  - name: include local_user role
+    include_role:
+      name: local_user
+
+  - name: include common
+    include_role:
+      name: common
+
 ## =========================================================
 ##       PLAY -- Configure database tier
 ## ---------------------------------------------------------
-#
-#- name: Configure instances in database tier
-#  hosts: vm_tag_db
-#  remote_user: root
-#  become: yes
-#  become_method: sudo
-#  gather_facts: True
-#
-#  pre_tasks:
-#  - name: Pause for all instances to be ready for configuration
-#    wait_for_connection:
-#      sleep: 5
-#      timeout: 300
-#    
-#  roles:
-#  - siwapp_db
-#
-# =========================================================
-#       PLAY -- Configure HA proxy for the database tier
-# ---------------------------------------------------------
-#
-#- name: Configure instances in haproxy for database tier
-#  hosts: vm_tag_db_lb
-#  remote_user: root
-#  become: yes
-#  become_method: sudo
-#  gather_facts: True
-#
-#  pre_tasks:
-#  - name: Pause for all instances to be ready for configuration
-#    wait_for_connection:
-#      sleep: 5
-#      timeout: 300
-#
-#  roles:
-#  - siwapp_haproxy_db
+
+- name: Configure instances in database tier
+  hosts: vm_tag_db
+  remote_user: root
+  become: yes
+  become_method: sudo
+  gather_facts: True
+
+  pre_tasks:
+  - name: Pause for all instances to be ready for configuration
+    wait_for_connection:
+      sleep: 5
+      timeout: 300
+    
+  roles:
+  - siwapp_db
+
+ =========================================================
+       PLAY -- Configure HA proxy for the database tier
+ ---------------------------------------------------------
+
+- name: Configure instances in haproxy for database tier
+  hosts: vm_tag_db_lb
+  remote_user: root
+  become: yes
+  become_method: sudo
+  gather_facts: True
+
+  pre_tasks:
+  - name: Pause for all instances to be ready for configuration
+    wait_for_connection:
+      sleep: 5
+      timeout: 300
+
+  roles:
+  - siwapp_haproxy_db
 
 # =========================================================
 #       PLAY -- Configure application tier
 # ---------------------------------------------------------
 
-#- name: Configure instances in application tier
-#  hosts: vm_tag_app
-#  remote_user: root
-#  become: yes
-#  become_method: sudo
-#  gather_facts: True
-#  
-#  pre_tasks:
-#  - name: Pause for all instances to be ready for configuration
-#    wait_for_connection:
-#      sleep: 5
-#      timeout: 300
-#
-#  roles:
-#  - siwapp_app
+- name: Configure instances in application tier
+  hosts: vm_tag_app
+  remote_user: root
+  become: yes
+  become_method: sudo
+  gather_facts: True
+  
+  pre_tasks:
+  - name: Pause for all instances to be ready for configuration
+    wait_for_connection:
+      sleep: 5
+      timeout: 300
+
+  roles:
+  - siwapp_app
 
 # =========================================================
 #       PLAY -- Configure HA proxy for the application tier
