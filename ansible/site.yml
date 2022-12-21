@@ -45,9 +45,9 @@
   roles:
   - siwapp_db
 
- =========================================================
-       PLAY -- Configure HA proxy for the database tier
- ---------------------------------------------------------
+# =========================================================
+#      PLAY -- Configure HA proxy for the database tier
+# ---------------------------------------------------------
 
 - name: Configure instances in haproxy for database tier
   hosts: vm_tag_db_lb
