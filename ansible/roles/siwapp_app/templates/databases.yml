@@ -2,13 +2,13 @@ all:
   doctrine:
     class: sfDoctrineDatabase
     param:
-      dsn: 'mysql:host={{ hostvars[vm_tag_db_lb]['private_ip_address'] }};dbname=siwapp'
+      dsn: 'mysql:host={{ hostvars[groups['vm_tag_db_lb'][0]]['private_ip_address'] }};dbname=siwapp'
       username: '{{galera_db_user}}'
       password: '{{galera_db_user_pwd}}'
 test:
   doctrine:
     class: sfDoctrineDatabase
     param:
-      dsn: 'mysql:host={{ hostvars[vm_tag_db_lb]['private_ip_address'] }};dbname=siwapp_test'
+      dsn: 'mysql:host={{ hostvars[groups['vm_tag_db_lb'][0]]['private_ip_address'] }};dbname=siwapp_test'
       username: '{{galera_db_user}}'
       password: '{{galera_db_user_pwd}}'
