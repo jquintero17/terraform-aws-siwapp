@@ -6,6 +6,8 @@ regions:
   - us-east-1
 hostnames:
   - ip-address
+filters:
+  tag-key: ansible_group
 compose:
   ansible_priv_ip: private_ip_address
   ansible_host: public_ip_address
