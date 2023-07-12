@@ -34,7 +34,7 @@
 
   - name: Clone repo to a new working directory
     ansible.builtin.git:
-      repo: https://github.com/jlunde-cisco/terraform-aws-siwapp.git
+      repo: https://github.com/jquintero17/terraform-aws-siwapp.git
       dest: /root/{{ dir_name }}/repo
       single_branch: yes
       version: main
