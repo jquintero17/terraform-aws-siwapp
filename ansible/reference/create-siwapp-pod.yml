@@ -29,11 +29,11 @@
   gather_facts: False
 
   vars:
-      key_name: 'dchosnek m13'
+      key_name: 'vesx1-prod-vpc-key'
       instance_type: t2.micro
       security_group: [default, "SSH only", ICMP]
-      image: ami-6871a115
-      region: us-east-1
+      image: ami-078a6a18fb73909b2
+      region: us-west-2
       pod_number: 4
       db_count: 3
       app_count: 3
