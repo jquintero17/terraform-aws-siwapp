@@ -18,10 +18,10 @@
   gather_facts: False
 
   vars:
-      image: ami-6871a116
-      region: us-east-1
+      image: ami-078a6a18fb73909b2
+      region: us-west-2
       pod_number: 4
-
+      
   tasks:
 
   - name: Set instance count to zero for pod {{pod_number}}
