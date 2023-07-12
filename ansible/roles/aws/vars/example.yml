@@ -3,7 +3,7 @@
 
 # AWS region expressed like us-east-1 or eu-west-2
 # https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/Concepts.RegionsAndAvailabilityZones.html
-region: us-east-1
+region: us-west-2
 
 # name of the SSH key with which to deploy the instances
 key_name: 'my SSH key name'
@@ -17,7 +17,8 @@ instance_type: t2.micro
 # RHEL 7.5
 # image: ami-6871a115
 # RHEL 7.6
-image: ami-011b3ccf1bd6db744
+#image: ami-011b3ccf1bd6db744
+image: ami-078a6a18fb73909b2
 
 # names of security groups to be applied to all instances except web tier
 security_group: [group_one, group_two]
